@@ -1,0 +1,191 @@
+/* HomePage.css */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #f5f5f5; /* match your page background */
+    overflow-x: hidden;
+  }
+@media (max-width: 768px) {
+    .nav-item {
+      font-size: 14px;
+    }
+  
+    .profile-icon {
+      width: 28px;
+      height: 28px;
+    }
+  
+    input[type="text"] {
+      max-width: 150px;
+    }
+  }
+
+  
+  .profile-icon {
+    width: 32px;
+    height: 32px;
+    background-color: #0b1543;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .profile-icon:hover {
+    background-color: white;
+    color: #0b1543;
+  }
+  
+  /* Tooltip container */
+.chatbot-tooltip {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  /* Tooltip text */
+  .chatbot-tooltip .tooltip-text {
+    visibility: hidden;
+    background-color: #0b1543;
+    color: #fff;
+    text-align: center;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+  
+    /* Position */
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px); /* Start 10px lower */
+    opacity: 0;
+  
+    /* Animation */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  /* Show on hover */
+  .chatbot-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* Slide up */
+  }
+  .logo-box {
+    background-color: #0b1543;
+    padding: 4px;
+    border-radius: 6px;
+    display: inline-block;
+  }  
+  .nav-item {
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  
+  .nav-item:hover {
+    color: #0b1543;
+    transform: scale(1.05);
+  }
+  
+  .nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #0b1543;
+    transition: width 0.3s;
+  }
+  
+  .nav-item:hover::after {
+    width: 100%;
+  }
+
+  .port-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #ccc;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: transparent;
+    border-radius: 4px;
+  }
+  
+  .port-link:hover {
+    background-color: #c7a349;
+    color: #0b1543;
+    transform: scale(1.02);
+  }
+  .activity-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border-radius: 6px;
+  }
+  
+  .activity-item:hover {
+    background-color: #c7a349;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+  .chatbot-button:hover {
+    background-color: #b59036;
+    transform: translateY(-2px);
+  }
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+  .chatbot-button {
+    animation: bounce 1.5s ease-in-out infinite;
+  }
+  .hover-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .hover-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  }
+  
+  .activity-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+    font-size: 14px;
+  }
+  
+  .port-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+    font-size: 16px;
+  }
+  
