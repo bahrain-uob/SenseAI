@@ -18,12 +18,27 @@ body, html {
   width: 100%;
   padding: 12px 32px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 16px;
   align-items: center;
+  flex-direction: row; /* text on the right, logos on the left */
 }
+
+.header-text {
+  font-size: 10px; /* Try 12px or 10px if you want it even smaller */
+  color: white;
+  text-align: right;
+  line-height: 1.4;
+}
+
 
 .logo {
   height: 60px;
+}
+
+.logo-container {
+  display: flex;
+  gap: 20px; /* space between the two logos */
 }
 
 .header-text {

@@ -9,14 +9,18 @@ function Login() {
   return (
     <div className="login-wrapper">
       <div className="login-header">
-        <img src={leftLogo} alt="Bahrain Logo" className="logo" />
-        <div className="header-text">
-          <div>KINGDOM OF BAHRAIN</div>
-          <div>MINISTRY OF INTERIOR</div>
-          <div>CUSTOMS AFFAIRS</div>
-        </div>
-        <img src={rightLogo} alt="Customs Logo" className="logo" />
-      </div>
+  <div className="logo-container">
+  <img src={leftLogo} alt="Bahrain Logo" height={50} />
+<img src={rightLogo} alt="Customs Logo" height={50} />
+
+  </div>
+  <div className="header-text">
+    <div>KINGDOM OF BAHRAIN</div>
+    <div>MINISTRY OF INTERIOR</div>
+    <div>CUSTOMS AFFAIRS</div>
+  </div>
+</div>
+
 
       <div className="title-container">
         <h1 className="senseai-title">SenseAI</h1>
