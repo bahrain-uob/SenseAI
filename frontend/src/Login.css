@@ -5,12 +5,15 @@ body, html {
   background-color: #ffffff;
 }
 
-.login-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.login-wrapper form {
+  background-color: white;
   padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  margin: 0 auto;
 }
+
 
 .login-header {
   background-color: #0c1d45;
@@ -21,11 +24,11 @@ body, html {
   justify-content: flex-start;
   gap: 16px;
   align-items: center;
-  flex-direction: row; /* text on the right, logos on the left */
+  flex-direction: row;
 }
 
 .header-text {
-  font-size: 10px; /* Try 12px or 10px if you want it even smaller */
+  font-size: 10px; 
   color: white;
   text-align: right;
   line-height: 1.4;
@@ -38,7 +41,7 @@ body, html {
 
 .logo-container {
   display: flex;
-  gap: 20px; /* space between the two logos */
+  gap: 20px; 
 }
 
 .header-text {
@@ -117,18 +120,19 @@ body, html {
   text-decoration: underline;
 }
 
-.login-form button {
-  background-color: #C5A052;
+button[type="submit"] {
+  background-color: #d4af37; /* gold color */
   color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 16px;
+  padding: 12px;
   width: 100%;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.login-form button:hover {
-  background-color: #b9913b;
+button[type="submit"]:hover {
+  background-color: #c19e56;
 }
+

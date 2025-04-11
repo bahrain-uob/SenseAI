@@ -15,3 +15,7 @@ new APIStack(app, "APIStack", dbStack); // Pass the DBStack as the second argume
 
 // Optionally, you can create your other stacks here if needed
 new MyCdkStack(app, "MyCdkAppStack");
+
+const { AuthStack } = require('../lib/auth-stack');
+
+new AuthStack(app, 'SenseAI-Auth');
