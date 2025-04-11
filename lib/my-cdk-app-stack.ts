@@ -5,33 +5,37 @@ import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import { RemovalPolicy } from "aws-cdk-lib";
 
 export class MyCdkStack extends cdk.Stack {
+  public readonly TransactionUploadsBucket: s3.Bucket; // i will check if it nescceary or not
+
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     // S3 Bucket for React Website (without public access)
-    const websiteBucket = new s3.Bucket(this, "WebsiteBucket", {
+    this.TransactionUploadsBucket = new s3.Bucket(this, "TransactionUploadsBucket ", {
       websiteIndexDocument: "index.html",
       websiteErrorDocument: "error.html",
+      versioned: true,
       removalPolicy: RemovalPolicy.DESTROY,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,  // Block public access to the bucket
     });
+    
 
     // Deploy React App to S3
     new s3deploy.BucketDeployment(this, "DeployWebsite", {
       sources: [s3deploy.Source.asset("./frontend/build")],
-      destinationBucket: websiteBucket,
+      destinationBucket: this.TransactionUploadsBucket,
     });
 
     // CloudFront Distribution for S3 bucket
     const cloudfrontOAI = new cloudfront.OriginAccessIdentity(this, "OriginAccessIdentity");
 
-    websiteBucket.grantRead(cloudfrontOAI); // Grant CloudFront access to the S3 bucket
+    this.TransactionUploadsBucket.grantRead(cloudfrontOAI); // Grant CloudFront access to the S3 bucket
 
     const cloudfrontDistribution = new cloudfront.CloudFrontWebDistribution(this, "CloudFrontDistribution", {
       originConfigs: [
         {
           s3OriginSource: {
-            s3BucketSource: websiteBucket,
+            s3BucketSource: this.TransactionUploadsBucket,
             originAccessIdentity: cloudfrontOAI,  // Associate OAI with the CloudFront distribution
           },
           behaviors: [{ isDefaultBehavior: true }],

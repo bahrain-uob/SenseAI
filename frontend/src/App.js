@@ -13,8 +13,9 @@ function App() {
 
   return (
     <div>
-      <h1>Welcome to [ChallengeName].bh</h1>
-      <p>Message from the Backend system: {message}</p>
+      <h1>Welcome to SensAI.bh</h1>
+      <p>Message from Ali Abdullah&Alsageh: {"hello teammmmm🔥🔥🔥💻💻🤯🤯"}</p>
+      
     </div>
   );
 }

@@ -1,11 +1,32 @@
 import * as cdk from "aws-cdk-lib";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as s3 from "aws-cdk-lib/aws-s3"
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import { DBStack } from "./DBstack"; // Import DBStack
 
+import { MyCdkStack } from "./my-cdk-app-stack";
+
+
+
+
+
 export class APIStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, dbStack: DBStack, props?: cdk.StackProps) {
+  public readonly TransactionUploadsBucket: s3.Bucket;
+  constructor(scope: cdk.App, id: string, dbStack: DBStack,TransactionUploadsBucket:s3.Bucket, props?: cdk.StackProps,) {
     super(scope, id, props);
+
+            const uploadBucket = TransactionUploadsBucket;
+            const GetUploadUrlLambda = new lambda.Function(this, "GetUploadUrlLambda", {
+                runtime: lambda.Runtime.NODEJS_18_X,
+                handler: "getUploadUrl.handler",
+                code: lambda.Code.fromAsset("lambda"),
+                environment: {
+                BUCKET_NAME: uploadBucket.bucketName,
+                },
+            });
+            
+            // Give Lambda permission to upload to S3
+            uploadBucket.grantPut(GetUploadUrlLambda);
 
     // Lambda function to insert sample cases into DynamoDB
     const insertSampleCaseLambda = new lambda.Function(this, "InsertSampleCaseLambda", {
@@ -49,23 +70,29 @@ export class APIStack extends cdk.Stack {
     dbStack.casesTable.grantReadData(getCasesLambda);
     dbStack.casesTable.grantReadWriteData(insertSampleCaseLambda);
 
-    // Create the API Gateway
-    const api = new apigateway.RestApi(this, "[ChallengeName]Api", {
-      restApiName: "[ChallengeName] Service",
-    });
+    
 
-    // Resource for '/cases' to insert new case
+    // Create the API Gateway
+    const api = new apigateway.RestApi(this, "[SenseAI]Api", {
+      restApiName: " SensAI Service",
+    });
+    //upload api path to upload transaction
+    const upload = api.root.addResource("upload");
+    upload.addMethod("GET", new apigateway.LambdaIntegration(GetUploadUrlLambda));
+    
+
+    /* // Resource for '/cases' to insert new case
     const cases = api.root.addResource("cases");
     cases.addMethod("POST", new apigateway.LambdaIntegration(insertCaseLambda)); // POST /cases
     cases.addMethod("GET", new apigateway.LambdaIntegration(getCasesLambda));   // GET /cases
 
     // Resource for '/cases/sample' to insert sample cases
     const sampleCases = cases.addResource("sample");
-    sampleCases.addMethod("POST", new apigateway.LambdaIntegration(insertSampleCaseLambda));  // POST /cases/sample
+    sampleCases.addMethod("POST", new apigateway.LambdaIntegration(insertSampleCaseLambda));*/  // POST /cases/sample
 
     // Resource for '/hello'
     const hello = api.root.addResource("hello");
-    hello.addMethod("GET", new apigateway.LambdaIntegration(helloLambda));  // GET /hello
+    hello.addMethod("GET", new apigateway.LambdaIntegration(helloLambda));  // GET /hello 
 
     // Outputs for both APIs
     new cdk.CfnOutput(this, "ApiEndpoint", {
