@@ -1,0 +1,26 @@
+{   
+    "arabic":"arabic",
+    "english":"english",
+    "home": "Home",
+    "upload": "Upload",
+    "activities": "Activities",
+    "Auditing": "Auditing",
+    "chatbot": "Chatbot",
+    "logout": "Log out",
+    "search": "Search...",
+    "customsBot": "Customs Bot",
+  "kingdom": "KINGDOM OD BAHRAIN",
+  "ministry": "MINISTRY OF INTERIOR",
+  "customsAffairs": "CUSTOMS AFFAIRS",
+  "airport":"AirPort",
+  "landport":"LandPort",
+  "seaport":"SeaPort",
+  "allport":"All Ports",
+  "messege":"Type a message...",
+   "send":"Send",
+   "languch":"languch",
+   "signout": "Signout",
+    "recent_activity": "Recent Activities",
+    "notification":"Notification"
+
+  }
