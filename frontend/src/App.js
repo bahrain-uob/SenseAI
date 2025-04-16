@@ -1,22 +1,84 @@
-import React, { useEffect, useState } from "react";
+
+import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route,Navigate } from "react-router-dom";
+import Login from "./logIn";
+import HomePage from "./pages/HomePage";
+import Home from "./pages/Home";
+import Upload from "./Upload";
+import Activities from "./pages/Activities";
+import Auditing from "./pages/Auditing";
+import Chatbot from "./pages/Chatbot";
+import Air from "./pages/Air";
+import Land from "./Land";
+import Sea from "./Sea";
+import AllPorts from "./pages/Allports";
+
 
 function App() {
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    // Replace YOUR_API_GATEWAY_URL with the actual API Gateway URL
-    fetch("YOUR_API_GATEWAY_URL")
-      .then((res) => res.json())
-      .then((data) => setMessage(data.message))
-      .catch((err) => console.error("Error fetching data:", err));
-  }, []);
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // check authntication
   return (
-    <div>
-      <h1>Welcome to [ChallengeName].bh</h1>
-      <p>Message from the Backend system: {message}</p>
-    </div>
+    <Router>
+      <Routes>
+        <Route
+          path="/login"
+          element={<Login onLogin={() => setIsAuthenticated(true)} />}
+        />
+        <Route
+          path="/*"
+          element={
+            isAuthenticated ? (
+              <HomePage>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/pages/upload" element={<Upload />} />
+                  <Route path="/pages/activities" element={<Activities />} />
+                  <Route path="/pages/auditing" element={<Auditing />} />
+                  <Route path="/pages/chatbot" element={<Chatbot />} />
+                  <Route path="/pages/airport" element={<Air />} />
+                  <Route path="/pages/landport" element={<Land />} />
+                  <Route path="/pages/seaport" element={<Sea />} />
+                  <Route path="/pages/allports" element={<AllPorts />} />
+                </Routes>
+              </HomePage>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+      </Routes>
+    </Router>
   );
 }
 
 export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

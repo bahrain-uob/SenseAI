@@ -1,0 +1,26 @@
+{
+    "arabic":"العربية",
+    "english":"الانجليزية",
+    "home": "الرئيسية",
+    "upload": "رفع الملفات",
+    "activities": "الأنشطة",
+    "Auditing":"التدقيق",
+    "chatbot": "روبوت",
+    "logout": "تسجيل الخروج",
+    "search": "بحث...",
+    "customsBot": "روبوت الجمارك",
+  "kingdom": "مملكة البحرين",
+  "ministry": "وزارة الداخلية",
+  "customsAffairs": "شؤون الجمارك",
+  "airport":"المطار",
+  "landport":"الميناء البري",
+  "seaport":"الميناء البحري",
+  "allport":"جميع الموانئ",
+  "messege":"اكتب رسالة...",
+   "send":"إرسال",
+   "languch":"اللغة",
+   "signout": "تسجيل الخروج",
+    "recent_activity": "التحديثات الأخيرة",
+    "notification":"الاشعارات"
+   
+  }
