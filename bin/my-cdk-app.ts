@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { MyCdkStack } from "../lib/my-cdk-app-stack";
 import { DBStack } from "../lib/DBstack"; // Import your DBStack
 import { APIStack } from "../lib/api-stack"; // Import your APIStack
+import { SagemakerStack } from "../lib/sagemaker-stack";
 
 const app = new cdk.App();
 
@@ -19,3 +20,5 @@ new MyCdkStack(app, "MyCdkAppStack");
 const { AuthStack } = require('../lib/auth-stack');
 
 new AuthStack(app, 'SenseAI-Auth');
+
+new SagemakerStack(app, "SagemakerStack");
