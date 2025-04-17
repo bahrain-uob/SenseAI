@@ -51,7 +51,7 @@ The `lambda/` directory contains the Lambda function code, which is part of your
 
 The `bin/` and `lib/` directories are where your AWS Cloud Development Kit (CDK) application lives.
 
-- **bin/**: The entry point for your CDK app, typically a file like `my-cdk-app.ts`. This file defines which stack/s are to be deployed.
+- **bin/**: The entry point --Hi im omar-- for your CDK app, typically a file like `my-cdk-app.ts`. This file defines which stack/s are to be deployed.
 - **lib/**: Contains the CDK stacks, where you define the resources (S3, API Gateway, Lambda) that will be deployed to AWS. In your case, `my-cdk-app-stack.ts` is where the CDK resources such as the S3 bucket, API Gateway, and Lambda function are defined.
 
 ##### 4. **CDK Configuration (`cdk.json`, `package.json`, `tsconfig.json`)**
