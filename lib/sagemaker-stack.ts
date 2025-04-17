@@ -11,9 +11,22 @@ export class SagemakerStack extends cdk.Stack {
     // S3 BUCKET FOR RAW DATASETS 
     const dataBucket = new s3.Bucket(this, 'RawDataBucket', {
       versioned: false,
-      removalPolicy: cdk.RemovalPolicy.RETAIN, // Keeps data if stack is destroyed
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      lifecycleRules: [
+        {
+          id: 'TransitionToStandardIA',
+          enabled: true,
+          transitions: [
+            {
+              storageClass: s3.StorageClass.INFREQUENT_ACCESS,
+              transitionAfter: cdk.Duration.days(30),
+            },
+          ],
+        },
+      ],      
     });
+    
 
     // IAM ROLE FOR SAGEMAKER NOTEBOOK 
     const sagemakerExecutionRole = new iam.Role(this, 'SagemakerExecutionRole', {
