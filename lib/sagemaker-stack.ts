@@ -9,7 +9,7 @@ export class SagemakerStack extends cdk.Stack {
     super(scope, id, props);
 
     // S3 BUCKET FOR RAW DATASETS 
-    const dataBucket = new s3.Bucket(this, 'RawDataBucket', {
+    const dataBucket = new s3.Bucket(this, 'TransactionsRawDataBucket', {
       versioned: false,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
