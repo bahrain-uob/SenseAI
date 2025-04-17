@@ -19,3 +19,5 @@ new MyCdkStack(app, "MyCdkAppStack");
 const { AuthStack } = require('../lib/auth-stack');
 
 new AuthStack(app, 'SenseAI-Auth');
+
+console.log("print tetst")
