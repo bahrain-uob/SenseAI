@@ -1,0 +1,87 @@
+.activities-wrapper {
+    display: flex;
+  flex-direction: column;
+  align-items: center;
+    padding: 2rem;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .filters {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .filter-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-weight: 500;
+  }
+
+  .filter-item label {
+    margin-bottom: 4px;
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .filters select,
+  .export-btn {
+    padding: 8px 16px;
+  background-color: #eee;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  }
+  
+  .activities-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .activities-table th, .activities-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .employee-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .employee-info img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+  }
+  
+  .status-badge {
+    padding: 0.3rem 0.7rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+  }
+  
+  .status-completed {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  
+  .status-flagged {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  
+  .status-pending {
+    background-color: #e2e3e5;
+    color: #6c757d;
+  }
+  .activities-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+  }  
