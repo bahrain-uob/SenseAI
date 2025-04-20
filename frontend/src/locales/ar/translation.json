@@ -21,6 +21,18 @@
    "languch":"اللغة",
    "signout": "تسجيل الخروج",
     "recent_activity": "التحديثات الأخيرة",
-    "notification":"الاشعارات"
+    "notification":"الاشعارات",
+    
+      "upload2": {
+        "title": "تحميل الملفات",
+        "instruction": "قم بإسقاط ملفاتك هنا أو",
+        "browse": "تصفح",
+        "upload": "تحميل",
+        "cancel": "إلغاء",
+        "historyTitle": "سجل التحميل",
+        "completed": "اكتمل"
+      }
+    
+    
    
   }

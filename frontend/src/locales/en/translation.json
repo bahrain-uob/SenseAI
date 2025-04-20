@@ -18,9 +18,20 @@
   "allport":"All Ports",
   "messege":"Type a message...",
    "send":"Send",
-   "languch":"languch",
+   "languch":"Language",
    "signout": "Signout",
     "recent_activity": "Recent Activities",
-    "notification":"Notification"
+    "notification":"Notification",
 
+      "upload2": {
+        "title": "Upload Files",
+        "instruction": "Drop your files here or",
+        "browse": "Browse",
+        "upload": "Upload",
+        "cancel": "Cancel",
+        "historyTitle": "Upload History",
+        "completed": "Completed"
+      }
+    
+    
   }
