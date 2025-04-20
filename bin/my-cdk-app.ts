@@ -12,7 +12,7 @@ const dbStack = new DBStack(app, "DBStack", {
 const MyCdkAppStack = new MyCdkStack(app, "MyCdkAppStack");
 
 // Create the APIStack, passing in the DBStack as a dependency
-new APIStack(app, "APIStack", dbStack, MyCdkAppStack.TransactionUploadsBucket); // Pass the DBStack as the second argument
+new APIStack(app, "APIStack", dbStack, MyCdkAppStack.TransactionUploadsBucket,MyCdkAppStack.uploadobjBucket); // Pass the DBStack as the second argument
 
 /* // Optionally, you can create your other stacks here if needed
 new MyCdkStack(app, "MyCdkAppStack");

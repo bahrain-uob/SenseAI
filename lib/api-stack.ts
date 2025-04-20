@@ -12,7 +12,7 @@ import { MyCdkStack } from "./my-cdk-app-stack";
 
 export class APIStack extends cdk.Stack {
   public readonly TransactionUploadsBucket: s3.Bucket;
-  constructor(scope: cdk.App, id: string, dbStack: DBStack,TransactionUploadsBucket:s3.Bucket, props?: cdk.StackProps,) {
+  constructor(scope: cdk.App, id: string, dbStack: DBStack,TransactionUploadsBucket:s3.Bucket,uploadobjBucket:s3.Bucket, props?: cdk.StackProps,) {
     super(scope, id, props);
 
             const uploadBucket = TransactionUploadsBucket;
@@ -64,6 +64,31 @@ export class APIStack extends cdk.Stack {
       handler: "index.handler",
       code: lambda.Code.fromAsset("lambda"),
     });
+    // Lambda function for uploaidng objects to uploadbucket s3
+    const uploadLambda = new lambda.Function(this, 'uploadLambda', {
+          runtime: lambda.Runtime.NODEJS_18_X,
+          handler: 'uploadobj.handler',
+          code: lambda.Code.fromAsset("lambda"),
+          environment: {
+            BUCKET_NAME: uploadobjBucket.bucketName,
+          },
+        });
+        // Grant permissions
+    uploadobjBucket.grantPut(uploadLambda);
+
+    // Lambda function to get upload history
+    const uploadHistoryLambda = new lambda.Function(this, 'uploadHistoryLambda', {
+    runtime: lambda.Runtime.NODEJS_18_X,
+    handler: 'getUploadHistory.handler',
+    code: lambda.Code.fromAsset("lambda"),
+    environment: {
+     BUCKET_NAME: uploadobjBucket.bucketName,
+  },
+  });
+    uploadHistoryLambda.addEnvironment("UPLOAD_BUCKET", uploadobjBucket.bucketName);
+    uploadobjBucket.grantRead(uploadHistoryLambda);
+    /* uploadobjBucket.grant(uploadHistoryLambda, "s3:ListBucket"); */
+
 
     // Grant permissions for Lambda functions to interact with DynamoDB
     dbStack.casesTable.grantReadWriteData(insertCaseLambda);
@@ -78,7 +103,76 @@ export class APIStack extends cdk.Stack {
     });
     //upload api path to upload transaction
     const upload = api.root.addResource("upload");
-    upload.addMethod("GET", new apigateway.LambdaIntegration(GetUploadUrlLambda));
+    upload.addMethod("GET", new apigateway.LambdaIntegration(GetUploadUrlLambda), { //for testing
+                authorizationType: apigateway.AuthorizationType.NONE,
+                methodResponses: [
+                  {
+                     
+                    statusCode: "200",
+                    responseParameters: {
+                      "method.response.header.Access-Control-Allow-Origin": true,
+                      "method.response.header.Access-Control-Allow-Headers": true,
+                      "method.response.header.Access-Control-Allow-Methods": true,
+                    },
+      
+                  },
+                ],
+              });
+              
+              upload.addCorsPreflight({
+                allowOrigins: ["https://d10uresn4y47do.cloudfront.net"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
+                allowMethods: ["GET","PUT"],
+                
+              });
+    
+        const uploadobj = api.root.addResource("uploadobj");
+              uploadobj.addMethod("GET", new apigateway.LambdaIntegration(uploadLambda), { //for testing
+                          authorizationType: apigateway.AuthorizationType.NONE,
+                          methodResponses: [
+                            {
+                               
+                              statusCode: "200",
+                              responseParameters: {
+                                "method.response.header.Access-Control-Allow-Origin": true,
+                                "method.response.header.Access-Control-Allow-Headers": true,
+                                "method.response.header.Access-Control-Allow-Methods": true,
+                              },
+                
+                            },
+                          ],
+                        }); 
+                        
+                        uploadobj.addCorsPreflight({
+                          allowOrigins: ["https://d10uresn4y47do.cloudfront.net"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
+                          allowMethods: ["GET","OPTIONS"],
+                          
+                        });
+
+
+        const uploadhistory = api.root.addResource('uploadhistory');
+        uploadhistory.addMethod('GET',new apigateway.LambdaIntegration(uploadHistoryLambda), { //for testing
+          authorizationType: apigateway.AuthorizationType.NONE,
+          methodResponses: [
+            {
+               
+              statusCode: "200",
+              responseParameters: {
+                "method.response.header.Access-Control-Allow-Origin": true,
+                "method.response.header.Access-Control-Allow-Headers": true,
+                "method.response.header.Access-Control-Allow-Methods": true,
+              },
+
+            },
+          ],
+
+          
+        }); 
+
+        uploadhistory.addCorsPreflight({
+          allowOrigins: ["https://d10uresn4y47do.cloudfront.net"],
+          allowMethods: ["GET","OPTIONS"],
+        });
+        
     
 
     /* // Resource for '/cases' to insert new case

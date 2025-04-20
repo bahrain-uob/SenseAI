@@ -11,13 +11,19 @@ exports.handler = async (event) => {
     Bucket: process.env.BUCKET_NAME,
     Key: fileName,
     Expires: 600,
-    ContentType: "fileytpe",
+    ContentType: fileType,
   };
 
   const uploadUrl = s3.getSignedUrl("putObject", params);
 
   return {
     statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": ["https://d10uresn4y47do.cloudfront.net"], // Or your specific domain
+      "Access-Control-Allow-Headers": "*",
+      "Access-Control-Allow-Methods": "GET, POST,PUT, OPTIONS"
+
+    },
     body: JSON.stringify({ uploadUrl }),
   };
 };
