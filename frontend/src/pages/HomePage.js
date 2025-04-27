@@ -99,7 +99,9 @@ useEffect(() => {
 
       <div
   style={styles.langOption}
-  onClick={() =>{ console.log('Signed out');
+  onClick={() =>{ 
+    navigate('/logIn')
+    console.log('Signed out');
     setShowLanguageDropdown(false);
   }
 } // Replace with real sign-out logic later
