@@ -30,7 +30,30 @@
         "upload": "Upload",
         "cancel": "Cancel",
         "historyTitle": "Upload History",
-        "completed": "Completed"
+        "completed": "Completed",
+        "uploadNewFile": "Upload New File",
+  "override": "Override",
+  "replace": "Replace",
+  "uploadCompleted": "Upload completed successfully!",
+  "overrideCompleted": "File overridden successfully!",
+  "replaceCompleted": "File replaced successfully!",
+  "fileHistory": "File History",
+  "yearLabel": "Year:",
+  "status":"Status",
+  "uploaded":"Date-Time",
+  "file":"file",
+  "jan": "Jan",
+  "feb": "Feb",
+  "mar": "Mar",
+  "apr": "Apr",
+  "may": "May",
+  "jun": "Jun",
+  "jul": "Jul",
+  "aug": "Aug",
+  "sep": "Sep",
+  "oct": "Oct",
+  "nov": "Nov",
+  "dec": "Dec"
       }
     
     

@@ -25,12 +25,37 @@
     
       "upload2": {
         "title": "تحميل الملفات",
-        "instruction": "قم بإسقاط ملفاتك هنا أو",
         "browse": "تصفح",
         "upload": "تحميل",
         "cancel": "إلغاء",
         "historyTitle": "سجل التحميل",
-        "completed": "اكتمل"
+        "completed": "اكتمل",
+        "uploadNewFile": "رفع ملف جديد",
+        "override": "استبدال",
+        "replace": "تحديث",
+        "uploadCompleted": "تم رفع الملف بنجاح!",
+        "overrideCompleted": "تم استبدال الملف بنجاح!",
+        "replaceCompleted": "تم تحديث الملف بنجاح!",
+        "uploadButton": "رفع",
+        "fileHistory": "سجل الملفات",
+        "status":"الحالة",
+        "uploaded":"التاريخ-الوقت",
+        "yearLabel": "السنة:",
+        "file":"الملف",
+          "jan": "يناير",
+          "feb": "فبراير",
+          "mar": "مارس",
+          "apr": "أبريل",
+          "may": "مايو",
+          "jun": "يونيو",
+          "jul": "يوليو",
+          "aug": "أغسطس",
+          "sep": "سبتمبر",
+          "oct": "أكتوبر",
+          "nov": "نوفمبر",
+          "dec": "ديسمبر"
+        
+        
       }
     
     

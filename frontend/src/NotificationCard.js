@@ -1,54 +1,31 @@
-
 import React from 'react';
-import { FaBell } from 'react-icons/fa';
+import { FaBell, FaTimes } from 'react-icons/fa';
 
-const NotificationCard = ({ title, message, time,onClose }) => {
-     
-    return (
-        <div
-          style={{
-            backgroundColor:  '#f9f9f9',
-            padding: '12px 16px',
-            borderRadius: '12px',
-            position: 'relative',
-            cursor: 'pointer',
-            transition: 'background 0.2s',
+const NotificationCard = ({ title, message, time, onClose }) => {
+  return (
+    <div className="notification-item">
+      <div className="notification-content">
+        <div className="notification-title">{title}</div>
+        <div className="notification-message">{message}</div>
+      </div>
+      <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+        <div style={{ fontSize: '12px', color: '#aaa' }}>{time}</div>
+        <button 
+          onClick={onClose} 
+          style={{ 
+            background: 'none', 
+            border: 'none', 
+            color: '#0b1543', 
+            cursor: 'pointer', 
+            fontSize: '14px',
+            marginTop: '4px'
           }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor =  '#b59036')}
-          onMouseLeave={e => (e.currentTarget.style.backgroundColor =  '#f9f9f9' )}
         >
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            style={{
-              position: 'absolute',
-              top: '8px',
-              right: '8px',
-              background: 'transparent',
-              border: 'none',
-              fontWeight: 'bold',
-              fontSize: '20px',
-              color: '#999',
-              cursor: 'pointer',
-            }}
-            title="Dismiss"
-          >
-            ×
-          </button>
-    
-          {/* Icon and Content */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-            <FaBell size={20} color="#f4b400" style={{ marginTop: '3px' }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{title}</div>
-              <div style={{ fontSize: '14px', color: '#333' }}>{message}</div>
-            </div>
-            <div style={{ fontSize: '12px', color: '#999', whiteSpace: 'nowrap' }}>{time}</div>
-          </div>
-        </div>
-      );
-  };
-  
-
+          <FaTimes />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default NotificationCard;
