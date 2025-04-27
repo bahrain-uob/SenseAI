@@ -75,10 +75,6 @@ function Login({onLogin}) {
             required
           />
         </div>
-
-        <div className="login-extra">
-          <a href="/">Forget password?</a>
-        </div>
         <button type="submit">Sign in</button>
 
         {error && <p className="error-msg">{error}</p>}

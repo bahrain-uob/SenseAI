@@ -104,11 +104,6 @@ body, html {
   outline: none;
 }
 
-.login-extra {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
-}
 
 .login-extra a {
   color: #0c1d45;
