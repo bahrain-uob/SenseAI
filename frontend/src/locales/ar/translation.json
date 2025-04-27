@@ -53,9 +53,12 @@
           "sep": "سبتمبر",
           "oct": "أكتوبر",
           "nov": "نوفمبر",
-          "dec": "ديسمبر"
-        
-        
+          "dec": "ديسمبر",
+          "transaction-title":"المعاملات عالية الخطورة",
+           "transaction-id":"Transaction ID",
+           "Risk":"Risk %",
+           "port":"port",
+           "pending":"Pending Since"
       }
     
     

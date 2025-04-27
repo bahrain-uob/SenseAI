@@ -65,7 +65,7 @@ const Home = () => {
             {/* High Risk Transactions */}
             <div className="high-risk-card">
             <div className="high-risk-header">
-  <h3 className="high-risk-title"> <FaExclamationTriangle className="section-icon" /> High Risk Transactions</h3>
+  <h3 className="high-risk-title"> <FaExclamationTriangle className="section-icon" /> {t('upload2.transaction-title')}</h3>
   <button className="refresh-button" onClick={handleRefresh}>
     <FaSyncAlt style={{ marginRight: '6px' }} />
     Refresh

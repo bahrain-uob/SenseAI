@@ -53,7 +53,13 @@
   "sep": "Sep",
   "oct": "Oct",
   "nov": "Nov",
-  "dec": "Dec"
+  "dec": "Dec",
+  "transaction-title":"High Risk Transactions",
+  "transaction-id":"Transaction ID",
+  "Risk":"Risk %",
+   "port":"port",
+   "pending":"Pending Since"
+
       }
     
     
