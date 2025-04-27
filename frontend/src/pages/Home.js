@@ -17,11 +17,11 @@ const Home = () => {
   ]);
 
   const [highRiskTransactions, setHighRiskTransactions] = useState([
-    { id: 'TRX1345', risk: 92, level: 'Critical', port: 'Sea Port', pending: '10 days' },
-    { id: 'TRX6722', risk: 85, level: 'High', port: 'Sea Port', pending: '5 days' },
-    { id: 'TRX9102', risk: 67, level: 'Medium', port: 'Land Port', pending: '3 days' },
-    { id: 'TRX4678', risk: 45, level: 'Low', port: 'Air Port', pending: '1 day' },
-    { id: 'TRX2746', risk: 40, level: 'Low', port: 'Land Port', pending: '1 day' },
+    { id: 'TRX1345', risk: 92, level: 'Critical', port: 'Khalifa Bin Salman Port', pending: '10 days' },
+    { id: 'TRX6722', risk: 85, level: 'High', port: 'Khalifa Bin Salman Port', pending: '5 days' },
+    { id: 'TRX9102', risk: 67, level: 'Medium', port: 'King Fahd Causeway ', pending: '3 days' },
+    { id: 'TRX4678', risk: 45, level: 'Low', port: 'Bahrain International Airport', pending: '1 day' },
+    { id: 'TRX2746', risk: 40, level: 'Low', port: 'King Fahd Causeway ', pending: '1 day' },
   ]);
 
   const handleDismiss = (id) => {
@@ -65,22 +65,22 @@ const Home = () => {
             {/* High Risk Transactions */}
             <div className="high-risk-card">
             <div className="high-risk-header">
-  <h3 className="high-risk-title"> <FaExclamationTriangle className="section-icon" /> {t('upload2.transaction-title')}</h3>
-  <button className="refresh-button" onClick={handleRefresh}>
+  <h3 className="high-risk-title"> <FaExclamationTriangle className="section-icon" /> {t('transaction-title')}</h3>
+ {/* <button className="refresh-button" onClick={handleRefresh}>
     <FaSyncAlt style={{ marginRight: '6px' }} />
     Refresh
-  </button>
+  </button>*/}
 </div>
 
 
               <table className="high-risk-table">
                 <thead className='title-risk-table'> 
                   <tr>
-                    <th>Transaction ID</th>
-                    <th>Risk %</th>
-                    <th>Risk Level</th>
-                    <th>Port</th>
-                    <th>Pending Since</th>
+                    <th>{t('transaction-id')}</th>
+                    <th>{t('Risk')}</th>
+                    <th>{t('risk')}</th>
+                    <th>{t('port')}</th>
+                    <th>{t('pending')}</th>
                   </tr>
                 </thead>
                 <tbody>

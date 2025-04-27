@@ -13,16 +13,21 @@
   "ministry": "وزارة الداخلية",
   "customsAffairs": "شؤون الجمارك",
   "airport":"المطار",
-  "landport":"الميناء البري",
+  "landport":"المنفذ البري",
   "seaport":"الميناء البحري",
-  "allport":"جميع الموانئ",
+  "allport":"جميع المنافذ",
   "messege":"اكتب رسالة...",
    "send":"إرسال",
    "languch":"اللغة",
    "signout": "تسجيل الخروج",
     "recent_activity": "التحديثات الأخيرة",
     "notification":"الاشعارات",
-    
+    "transaction-id":"رقم المعاملة",
+           "Risk":"الخطورة %",
+           "port":"المنفذ",
+           "pending":"قيد الانتظار",
+           "transaction-title":"المعاملات عالية الخطورة",
+           "risk":"درجة الخطورة",
       "upload2": {
         "title": "تحميل الملفات",
         "browse": "تصفح",
@@ -54,11 +59,9 @@
           "oct": "أكتوبر",
           "nov": "نوفمبر",
           "dec": "ديسمبر",
-          "transaction-title":"المعاملات عالية الخطورة",
-           "transaction-id":"Transaction ID",
-           "Risk":"Risk %",
-           "port":"port",
-           "pending":"Pending Since"
+           "chooseOptionMessage": "يوجد ملف تم رفعه لهذا الشهر. هل ترغب في استبداله أم إضافته? ",
+           "waiting":"قيد الانتظار"
+           
       }
     
     

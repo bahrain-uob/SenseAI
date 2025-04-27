@@ -5,7 +5,7 @@ import Login from "./logIn";
 import HomePage from "./pages/HomePage";
 import Home from "./pages/Home";
 import Upload from "./Upload";
-import Activities from "./pages/Activities";
+import Activities from "./pages/EmployeeActivities";
 import Auditing from "./pages/Auditing";
 import Chatbot from "./pages/Chatbot";
 import Air from "./pages/Air";

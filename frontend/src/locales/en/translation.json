@@ -22,7 +22,12 @@
    "signout": "Signout",
     "recent_activity": "Recent Activities",
     "notification":"Notification",
-
+    "transaction-title":"High Risk Transactions",
+    "transaction-id":"Transaction ID",
+    "Risk":"Risk %",
+     "port":"port",
+     "pending":"Pending Since",
+     "risk":"Risk Level",
       "upload2": {
         "title": "Upload Files",
         "instruction": "Drop your files here or",
@@ -54,12 +59,8 @@
   "oct": "Oct",
   "nov": "Nov",
   "dec": "Dec",
-  "transaction-title":"High Risk Transactions",
-  "transaction-id":"Transaction ID",
-  "Risk":"Risk %",
-   "port":"port",
-   "pending":"Pending Since"
-
+  "chooseOptionMessage": "A file for this month already exists. Would you like to Override it or Replace it?",
+  "waiting":"Waiting"
       }
     
     

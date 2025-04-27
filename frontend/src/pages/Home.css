@@ -244,5 +244,10 @@ html, body {
     text-align: start;
   }
   
-  
+  .option-message {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: bold;
+  }
   
