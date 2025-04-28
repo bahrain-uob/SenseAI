@@ -28,10 +28,7 @@ const Home = () => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
-  const handleRefresh = () => {
-    const shuffled = [...highRiskTransactions].sort(() => Math.random() - 0.5);
-    setHighRiskTransactions(shuffled);
-  };
+ 
 
   return (
     <>

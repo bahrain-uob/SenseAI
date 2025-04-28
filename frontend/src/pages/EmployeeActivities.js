@@ -73,7 +73,6 @@ const allActivities = [
     employee: 'Noura',
     action: 'Edit',
     transaction: 'TRX777777',
-    status: 'Completed',
   },
   {
     date: '2023-04-18',
@@ -85,9 +84,9 @@ const allActivities = [
 ];
 
 const exportToCSV = () => {
-  const headers = ['Date', 'Time', 'Employee', 'Action', 'Transaction', 'Status'];
-  const rows = allActivities.map(a => [a.date, a.time, a.employee, a.action, a.transaction, a.status]);
-  let csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].map(e => e.join(',')).join('\n');
+  const headers = ['Date', 'Time', 'Employee', 'Action', 'Transaction'];
+  const rows = allActivities.map(a => [a.date, a.time, a.employee, a.action, a.transaction]);
+  const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].map(e => e.join(',')).join('\n');
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement('a');
   link.setAttribute('href', encodedUri);
@@ -100,10 +99,10 @@ const EmployeeActivities = () => {
   const [employeeFilter, setEmployeeFilter] = useState('All');
   const [actionFilter, setActionFilter] = useState('All');
   const [searchTransaction, setSearchTransaction] = useState('');
-  const [dateFilter, setDateFilter] = useState(' ');
+  const [dateFilter, setDateFilter] = useState('');
 
   const filteredActivities = allActivities.filter((act) => {
-    const formattedActDate = new Date(act.date).toISOString().split('T')[0]; 
+    const formattedActDate = new Date(act.date).toISOString().split('T')[0];
     return (
       (dateFilter === '' || formattedActDate === dateFilter) &&
       (employeeFilter === 'All' || act.employee === employeeFilter) &&
@@ -121,19 +120,19 @@ const EmployeeActivities = () => {
 
       <div className="filters-row">
         <div className="filter-item">
-        <label htmlFor="date-filter">Date</label>
-  <input
-    id="date-filter"
-    type="date"
-    value={dateFilter}
-    onChange={(e) => setDateFilter(e.target.value)}
-    className="date-input"
-  />
+          <label htmlFor="date-filter">Date</label>
+          <input
+            id="date-filter"
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="date-input"
+          />
         </div>
 
         <div className="filter-item">
           <label>Employee</label>
-          <select onChange={(e) => setEmployeeFilter(e.target.value)}>
+          <select value={employeeFilter} onChange={(e) => setEmployeeFilter(e.target.value)}>
             <option>All</option>
             {uniqueEmployees.map(emp => <option key={emp}>{emp}</option>)}
           </select>
@@ -141,7 +140,7 @@ const EmployeeActivities = () => {
 
         <div className="filter-item">
           <label>Action</label>
-          <select onChange={(e) => setActionFilter(e.target.value)}>
+          <select value={actionFilter} onChange={(e) => setActionFilter(e.target.value)}>
             <option>All</option>
             {uniqueActions.map(action => <option key={action}>{action}</option>)}
           </select>
@@ -175,19 +174,27 @@ const EmployeeActivities = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredActivities.map((act, index) => (
-              <tr key={index}>
-                <td>{act.date}<br /><small>{act.time}</small></td>
-                <td>
-                  <div className="employee-info">
-                    <FontAwesomeIcon icon={faUserCircle} size="lg" />
-                    <span>{act.employee}</span>
-                  </div>
+            {filteredActivities.length === 0 ? (
+              <tr>
+                <td colSpan="4" style={{ textAlign: 'center', padding: '1rem' }}>
+                  No activities found.
                 </td>
-                <td>{act.action}</td>
-                <td>{act.transaction}</td>
               </tr>
-            ))}
+            ) : (
+              filteredActivities.map((act, index) => (
+                <tr key={index}>
+                  <td>{act.date}<br /><small>{act.time}</small></td>
+                  <td>
+                    <div className="employee-info">
+                      <FontAwesomeIcon icon={faUserCircle} size="lg" />
+                      <span>{act.employee}</span>
+                    </div>
+                  </td>
+                  <td>{act.action}</td>
+                  <td>{act.transaction}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -196,3 +203,4 @@ const EmployeeActivities = () => {
 };
 
 export default EmployeeActivities;
+
