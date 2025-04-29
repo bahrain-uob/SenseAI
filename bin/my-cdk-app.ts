@@ -10,11 +10,12 @@ const app = new cdk.App();
 const dbStack = new DBStack(app, "DBStack", {
   // Any custom stack props you may have for DBStack
 });
+const MyCdkAppStack = new MyCdkStack(app, "MyCdkAppStack");
 
 // Create the APIStack, passing in the DBStack as a dependency
-new APIStack(app, "APIStack", dbStack); // Pass the DBStack as the second argument
+new APIStack(app, "APIStack", dbStack, MyCdkAppStack.TransactionUploadsBucket,MyCdkAppStack.uploadobjBucket); // Pass the DBStack as the second argument
 
-// Optionally, you can create your other stacks here if needed
+/* // Optionally, you can create your other stacks here if needed
 new MyCdkStack(app, "MyCdkAppStack");
 
 const { AuthStack } = require('../lib/auth-stack');
@@ -22,3 +23,4 @@ const { AuthStack } = require('../lib/auth-stack');
 new AuthStack(app, 'SenseAI-Auth');
 
 new SagemakerStack(app, "SagemakerStack");
+*/
