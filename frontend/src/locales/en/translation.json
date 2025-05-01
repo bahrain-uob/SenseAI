@@ -9,7 +9,7 @@
     "logout": "Log out",
     "search": "Search...",
     "customsBot": "Customs Bot",
-  "kingdom": "KINGDOM OD BAHRAIN",
+  "kingdom": "KINGDOM OF BAHRAIN",
   "ministry": "MINISTRY OF INTERIOR",
   "customsAffairs": "CUSTOMS AFFAIRS",
   "airport":"AirPort",
@@ -25,7 +25,7 @@
     "transaction-title":"High Risk Transactions",
     "transaction-id":"Transaction ID",
     "Risk":"Risk %",
-     "port":"port",
+     "port":"Port",
      "pending":"Pending Since",
      "risk":"Risk Level",
       "upload2": {
