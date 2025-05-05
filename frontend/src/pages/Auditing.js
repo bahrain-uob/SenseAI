@@ -9,14 +9,34 @@ import {
 
 import './Auditing.css';
 
-const allTransactions = [
-  { risk: 91, id: 'TRX-2025001', hs: '81012.14.19', weight: '1.5 kg', value: '100$', date: '2024-01-12' },
-  { risk: 83, id: 'TRX-2025001', hs: '76612.14.14', weight: '23 kg', value: '90$', date: '2024-07-24' },
-  { risk: 67, id: 'TRX-2025001', hs: '43146.70.73', weight: '13 kg', value: '72$', date: '2024-10-04' },
-  { risk: 42, id: 'TRX-2025001', hs: '90562.11.46', weight: '8 kg', value: '56$', date: '2024-08-31' },
-  { risk: 15, id: 'TRX-2025001', hs: '34068.14.15', weight: '7 kg', value: '32$', date: '2024-06-09' },
-  { risk: 15, id: 'TRX-2025001', hs: '34068.14.15', weight: '29 kg', value: '72$', date: '2024-02-06' },
-];
+const allTransactions = Array.from({ length: 100 }, (_, i) => {
+  const risk = Math.floor(Math.random() * 100) + 1;
+  
+  // Base 8-digit HS code
+  const baseHS = String(Math.floor(10000000 + Math.random() * 90000000));
+
+  // Randomly decide whether to extend it
+  const hs = Math.random() < 0.5
+    ? baseHS  // 8-digit code
+    : baseHS + String(Math.floor(1 + Math.random() * 9999)).padStart(4, '0');  // 12-digit extended
+
+  const weight = `${Math.floor(Math.random() * 50) + 1} kg`;
+  const value = `${Math.floor(Math.random() * 100) + 10}BD`;
+  const date = new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1)
+    .toISOString()
+    .split('T')[0];
+
+  return {
+    risk,
+    id: `TRX-2025${i.toString().padStart(3, '0')}`,
+    hs,
+    weight,
+    value,
+    date
+  };
+});
+
+
 
 const getRiskClass = (risk) => {
   if (risk >= 90) return 'risk-critical';
@@ -33,11 +53,12 @@ const getRiskCategory = (risk) => {
 };
 
 const pieData = [
-  { name: 'Critical', value: 1 },
-  { name: 'High', value: 1 },
-  { name: 'Medium', value: 2 },
-  { name: 'Low', value: 2 },
+  { name: 'Critical', value: 9 },
+  { name: 'High', value: 15 },
+  { name: 'Medium', value: 40 },
+  { name: 'Low', value: 36 },
 ];
+
 
 const COLORS = ['#dc2626', '#f97316', '#facc15', '#4ade80'];
 const renderLabel = ({ percent }) => `${(percent * 100).toFixed(0)}%`;
@@ -86,8 +107,21 @@ export default function Auditing() {
   };
   
   
-  
-  
+  const [currentPage, setCurrentPage] = useState(1);
+const transactionsPerPage = 20;
+
+const indexOfLast = currentPage * transactionsPerPage;
+const indexOfFirst = indexOfLast - transactionsPerPage;
+const currentTransactions = filteredTransactions.slice(indexOfFirst, indexOfLast);
+
+const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+const goToPage = (page) => {
+  setCurrentPage(page);
+  window.scrollTo({ top: 0, behavior: 'smooth' }); // scroll to top
+};
+
   return (
     <div className="page-container">
       <div className="page-wrapper">
@@ -136,11 +170,11 @@ export default function Auditing() {
     <ResponsiveContainer width="100%" minWidth={360} height={260}>
   <BarChart
     data={[
-      { name: 'Total Transactions', value: 1234 },
-      { name: 'High Risk Cases', value: 86 },
-      { name: 'Total Value', value: 2400 },
-      { name: 'Optimization', value: 24 },
+      { name: 'Total Transactions', value: 100 },
+      { name: 'High Risk Cases', value: 24 },
+      { name: 'Total Value', value: 5604 },
     ]}
+    
     margin={{ top: 20, right: 20, left: 20, bottom: 40 }}
   >
     <XAxis dataKey="name" tick={renderCustomTick} interval={0} />
@@ -150,7 +184,7 @@ export default function Auditing() {
   dataKey="value"
   label={{ position: 'top', fill: '#444', fontSize: 12 }}
   isAnimationActive={true}
-  animationDuration={1000}
+  animationDuration={2000}
   animationEasing="ease-in-out"
 >
   <Cell fill="#0b1743" />
@@ -171,24 +205,48 @@ export default function Auditing() {
         <div className="page-right">
           <h2 className="page-title">Transaction List Analysis</h2>
 
-          <div className="filter-bar">
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', color: '#6b7280', fontWeight: '600', marginBottom: '0.5rem' }}>
-    <label style={{ marginBottom: '4px' }}>Date Range</label>
-    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-      <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-      <span style={{ color: '#555', fontWeight: 'normal' }}>to</span>
-      <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+          <div className="filter-bar" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginTop: '1rem',  textAlign: 'left',              // ← Add this
+  alignItems: 'flex-start'   }}>
+  {/* Date Range */}
+  <div style={{ display: 'flex', flexDirection: 'column', color: '#0b1743', fontWeight: 600, fontSize: '14px' }}>
+    <label style={{ marginBottom: '6px' }}>Date Range</label>
+    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+      <input
+        type="date"
+        value={fromDate}
+        onChange={(e) => setFromDate(e.target.value)}
+        style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc' }}
+      />
+      <span style={{ fontWeight: 'normal' }}>to</span>
+      <input
+        type="date"
+        value={toDate}
+        onChange={(e) => setToDate(e.target.value)}
+        style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc' }}
+      />
     </div>
   </div>
 
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', color: '#6b7280', fontWeight: '600', marginBottom: '0.5rem' }}>
-    <label style={{ marginBottom: '4px' }}>HS Code Search</label>
-    <input type="text" placeholder="Enter HS code" value={hsCode} onChange={(e) => setHsCode(e.target.value)} />
+  {/* HS Code Search */}
+  <div style={{ display: 'flex', flexDirection: 'column', color: '#0b1743', fontWeight: 600, fontSize: '14px' }}>
+    <label style={{ marginBottom: '6px' }}>HS Code Search</label>
+    <input
+      type="text"
+      placeholder="Enter HS code"
+      value={hsCode}
+      onChange={(e) => setHsCode(e.target.value)}
+      style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc', minWidth: '200px' }}
+    />
   </div>
 
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', color: '#6b7280', fontWeight: '600', marginBottom: '0.5rem' }}>
-    <label style={{ marginBottom: '4px' }}>Risk Level</label>
-    <select value={selectedRisk || ''} onChange={(e) => setSelectedRisk(e.target.value || null)}>
+  {/* Risk Level Filter */}
+  <div style={{ display: 'flex', flexDirection: 'column', color: '#0b1743', fontWeight: 600, fontSize: '14px' }}>
+    <label style={{ marginBottom: '6px' }}>Risk Level</label>
+    <select
+      value={selectedRisk || ''}
+      onChange={(e) => setSelectedRisk(e.target.value || null)}
+      style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc' }}
+    >
       <option value=''>All Risks</option>
       <option value='Critical'>Critical</option>
       <option value='High'>High</option>
@@ -198,22 +256,20 @@ export default function Auditing() {
   </div>
 </div>
 
-<div className="stats-row">
+
+<div className="stats-row" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginTop: '1rem',  textAlign: 'center',              // ← Add this
+  }}>
   <div className="stats-card" style={{ backgroundColor: 'white', color: '#0b1743', border: '2px solid #0b1743' }}>
     <div>Total Transactions</div>
-    <div className="count" style={{ color: '#0f172a' }}><CountUp end={1234} duration={2} separator="," /></div>
+    <div className="count" style={{ color: '#0f172a' }}><CountUp end={100} duration={2} separator="," /></div>
   </div>
   <div className="stats-card" style={{ backgroundColor: 'white', color: '#0b1743', border: '2px solid #0b1743' }}>
     <div>High Risk Cases</div>
-    <div className="count" style={{ color: '#ef4444' }}><CountUp end={86} duration={2} /></div>
+    <div className="count" style={{ color: '#ef4444' }}><CountUp end={24} duration={2} /></div>
   </div>
   <div className="stats-card" style={{ backgroundColor: 'white', color: '#0b1743', border: '2px solid #0b1743' }}>
     <div>Total Value</div>
-    <div className="count" style={{ color: '#1d4ed8' }}><CountUp end={2.4} duration={2} decimals={1} />M <span className="unit">BD</span></div>
-  </div>
-  <div className="stats-card" style={{ backgroundColor: 'white', color: '#0b1743', border: '2px solid #0b1743' }}>
-    <div>Approx. Optimization</div>
-    <div className="count" style={{ color: '#16a34a' }}>+<CountUp end={24} duration={2} />%</div>
+    <div className="count" style={{ color: '#1d4ed8' }}><CountUp end={5.6} duration={2} decimals={1} />K <span className="unit">BD</span></div>
   </div>
 </div>
 
@@ -256,27 +312,80 @@ export default function Auditing() {
       </tr>
     </thead>
     <tbody>
-  {filteredTransactions.map((tx, i) => {
-    const rowBg = getRiskClass(tx.risk) === 'risk-critical' ? '#fee2e2'
-      : getRiskClass(tx.risk) === 'risk-high' ? '#fde68a'
-      : getRiskClass(tx.risk) === 'risk-medium' ? '#fef9c3'
-      : '#dcfce7';
+      {currentTransactions.map((tx, i) => {
+        const rowBg = getRiskClass(tx.risk) === 'risk-critical' ? '#fee2e2'
+          : getRiskClass(tx.risk) === 'risk-high' ? '#fde68a'
+          : getRiskClass(tx.risk) === 'risk-medium' ? '#fef9c3'
+          : '#dcfce7';
 
-    return (
-      <tr key={i} style={{ backgroundColor: rowBg }}>
-        <td><span className={`risk-badge ${getRiskClass(tx.risk)}`}>{tx.risk}%</span></td>
-        <td>{tx.id}</td>
-        <td>{tx.hs}</td>
-        <td>{tx.weight}</td>
-        <td>{tx.value}</td>
-        <td>{tx.date}</td>
-        <td><FaEye className="review-icon" /></td>
-      </tr>
-    );
-  })}
-</tbody>
+        return (
+          <tr key={i} style={{ backgroundColor: rowBg }}>
+            <td><span className={`risk-badge ${getRiskClass(tx.risk)}`}>{tx.risk}%</span></td>
+            <td>{tx.id}</td>
+            <td>{tx.hs}</td>
+            <td>{tx.weight}</td>
+            <td>{tx.value}</td>
+            <td>{tx.date}</td>
+            <td><FaEye className="review-icon" /></td>
+          </tr>
+        );
+      })}
+    </tbody>
   </table>
+
+  {/* Pagination buttons */}
+  {totalPages > 1 && (
+    <div className="pagination">
+      {pageNumbers.map((num) => (
+        <button
+          key={num}
+          onClick={() => setCurrentPage(num)}
+          className={currentPage === num ? 'active' : ''}
+        >
+          {num}
+        </button>
+      ))}
+    </div>
+  )}
+ <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem' }}>
+  <button
+    onClick={() => goToPage(Math.max(currentPage - 1, 1))}
+    disabled={currentPage === 1}
+    style={{
+      padding: '8px 16px',
+      backgroundColor: '#0b1743',
+      color: 'white',
+      border: 'none',
+      borderRadius: '6px',
+      cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+    }}
+  >
+    Back
+  </button>
+
+  <div style={{ padding: '8px', fontWeight: 'bold', fontSize: '14px', color: '#0b1743' }}>
+    Page {currentPage} of {totalPages}
+  </div>
+
+  <button
+    onClick={() => goToPage(Math.min(currentPage + 1, totalPages))}
+    disabled={currentPage === totalPages}
+    style={{
+      padding: '8px 16px',
+      backgroundColor: '#0b1743',
+      color: 'white',
+      border: 'none',
+      borderRadius: '6px',
+      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+    }}
+  >
+    Next
+  </button>
 </div>
+
+
+</div>
+
 
         </div>
       </div>

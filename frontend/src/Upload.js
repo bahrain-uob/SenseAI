@@ -25,6 +25,9 @@ const UploadPage = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(() => () => {});
+
 
 
   useEffect(() => {
@@ -44,16 +47,24 @@ const UploadPage = () => {
               year = dt.getFullYear();
               month = dt.getMonth();
             }
+          
+            // Fallback date if lastModified is missing
+            const fallbackDate = (year !== undefined && month !== undefined)
+              ? new Date(year, month, 15).toISOString()
+              : null;
+          
             return {
               name: file.key,
               key: file.key,
               size: file.size,
-              lastModified: file.lastModified,
+              lastModified: file.lastModified || fallbackDate,
               year,
               month,
               status: 'Completed'
             };
           });
+          
+          
           setUploadHistory(parsed);
         }
       } catch (error) {
@@ -85,15 +96,14 @@ const UploadPage = () => {
       progress: 0,
     }));
     setFiles(selected);
+    setShowOptions(false); // hide modal if open
+    setShowConfirm(false); // important: stop loop
   };
+  
 
   const handleUpload = async () => {
     if (files.length === 0) return;
-    const alreadyExists = uploadHistory.find(f => f.month === selectedMonth && f.year === selectedYear);
-    if (alreadyExists) {
-      setShowOptions(true);
-      return;
-    }
+   
     await startUploadingFiles('Completed');
   };
 
@@ -132,7 +142,7 @@ const UploadPage = () => {
             {
               name: files[0].name,
               type: files[0].file.type,
-              time: timestamp,
+              lastModified: new Date().toISOString(),
               month: selectedMonth,
               year: selectedYear,
               status: statusText
@@ -174,13 +184,18 @@ const UploadPage = () => {
   };
 
   const handleOverride = () => {
+    if (files.length === 0) return;
+
+
     setUploadHistory(prev => prev.filter(
       file => !(file.month === selectedMonth && file.year === selectedYear)
     ));
-    startUploadingFiles('Override Completed');
+    startUploadingFiles('Edit Completed');
   };
 
   const handleReplace = async () => {
+   
+
     if (files.length === 0) return;
   
     setUploading(true);
@@ -208,10 +223,14 @@ const uploadUrl = data.uploadUrl;
           const percent = Math.round((event.loaded / event.total) * 100);
           setFiles(prev => {
             const updated = [...prev];
-            updated[0].progress = percent;
-            updated[0].status = 'Uploading';
+            updated[0].progress = 100;
+            updated[0].status = 'Completed';
             return updated;
           });
+          
+          // ✅ Trigger UI again
+          setFiles([...files]); // <-- force UI update
+          
         }
       });
   
@@ -230,7 +249,7 @@ const uploadUrl = data.uploadUrl;
               time: timestamp,
               month: selectedMonth,
               year: selectedYear,
-              status: 'Replaced',
+              status: 'Override Completed',
             }
           ]);
   
@@ -240,6 +259,10 @@ const uploadUrl = data.uploadUrl;
             updated[0].status = 'Completed';
             return updated;
           });
+          
+          // ✅ Trigger UI again
+          setFiles([...files]); // <-- force UI update
+          
   
           setTimeout(() => setShowNotification(false), 3000);
         } else {
@@ -271,18 +294,48 @@ const uploadUrl = data.uploadUrl;
     t('upload2.may'), t('upload2.jun'), t('upload2.jul'), t('upload2.aug'),
     t('upload2.sep'), t('upload2.oct'), t('upload2.nov'), t('upload2.dec')
   ];
-
+ 
   return (
     <div className="upload-page">
-      <div className="upload-wrapper-card">
+      <div className="upload-wrapper-card"><h1>{t('upload2.title')}</h1>
         {showNotification && (
           <div className="upload-toast">
             <FaCheck style={{ marginRight: '8px' }} />
             {toastMessage}
           </div>
         )}
+     {showConfirm && (
+  <div className="modal-overlay">
+    <div className="modal-content">
+      <h3>Confirm Action</h3>
+      <p>Are you sure you want to continue with this action?</p>
+
+      <div className="modal-buttons">
+
+       {/* YES: triggers upload */}
+       <button className="confirm-btn" onClick={() => {
+  setShowConfirm(false);
+  // let the user manually click the upload button afterward
+}}>
+  Yes
+</button>
+
+
+{/* CANCEL: closes modal and clears any file input */}
+<button className="cancel-btn" onClick={() => {
+  setShowConfirm(false);
+  setFiles([]); // ⛔ clear pending files to avoid showing upload box
+}}>
+  Cancel
+</button>
+
+      </div>
+    </div>
+  </div>
+)}
 
         <div className="upload-header-section">
+          
           <div className="calendar-box">
             <div className="year-selector">
               <label>{t('upload2.yearLabel')}</label>
@@ -294,31 +347,99 @@ const uploadUrl = data.uploadUrl;
             </div>
 
             <div className="months-grid">
-              {months.map((month, index) => (
-                <div
-                  key={index}
-                  className={`month ${selectedMonth === index ? 'selected' : ''} ${uploadHistory.some(f => f.month === index && f.year === selectedYear) ? 'uploaded' : ''}`}
-                  onClick={() => setSelectedMonth(index)}
-                >
-                  {month}
-                </div>
-              ))}
+            {months.map((month, index) => {
+  const monthHasFile = uploadHistory.some(f => f.month === index && f.year === selectedYear);
+
+  return (
+    <div
+      key={index}
+      className={`month ${selectedMonth === index ? 'selected' : ''} ${monthHasFile ? 'uploaded' : ''}`}
+      onClick={() => {
+        setSelectedMonth(index);
+        if (uploadHistory.some(f => f.month === index && f.year === selectedYear)) {
+          setShowOptions(true); // 👉 Show proper modal with Edit / Override
+        }
+      }}
+      
+    >
+      {month}
+    </div>
+  );
+})}
+
             </div>
           </div>
 
           <div className="upload-actions-box">
-            <button className="upload-main-btn" onClick={() => document.getElementById('uploadInput').click()}>
-              {t('upload2.uploadNewFile')}
-            </button>
+          {uploadHistory.some(f => f.month === selectedMonth && f.year === selectedYear) ? (
+  <button className="upload-main-btn disabled" onClick={() => setShowOptions(true)}>
+    {t('upload2.uploadNewFile')}
+  </button>
+) : (
+  <>
+    <button
+  className="upload-main-btn"
+  onClick={() => {
+    // if month already has file, show options modal instead of input
+    if (uploadHistory.some(f => f.month === selectedMonth && f.year === selectedYear)) {
+      setShowOptions(true);
+    } else {
+      document.getElementById('uploadInput')?.click();
+    }
+  }}
+>
+  {t('upload2.uploadNewFile')}
+</button>
+
+    <input type="file" hidden id="uploadInput" onChange={handleFileChange} />
+  </>
+)}
+
             <input type="file" hidden id="uploadInput" onChange={handleFileChange} />
 
             {showOptions && (
-              <div className="upload-options">
-                <div className="option-message">{t('upload2.chooseOptionMessage')}</div>
-                <button onClick={handleOverride}>{t('upload2.override')}</button>
-                <button onClick={handleReplace}>{t('upload2.replace')}</button>
-              </div>
-            )}
+  <div className="modal-overlay">
+    <div className="modal-content">
+      <h3>File Already Exists</h3>
+      <p>
+  {files.length > 0
+    ? 'Are you sure you want to continue with this action?'
+    : 'This month already has an uploaded file. You cannot upload again unless you override or edit it.'}
+</p>
+
+      <div className="modal-buttons">
+      <button className="confirm-btn" onClick={() => {
+  if (files.length === 0) {
+    document.getElementById('uploadInput').click(); // <-- trigger file input
+  } else {
+    setConfirmAction(() => handleOverride);
+    setShowConfirm(true);
+    setShowOptions(false);
+  }
+}}>
+  Edit
+</button>
+
+<button className="cancel-btn" onClick={() => {
+  if (files.length === 0) {
+    document.getElementById('uploadInput').click(); // <-- trigger file input
+  } else {
+    setConfirmAction(() => handleReplace);
+    setShowConfirm(true);
+    setShowOptions(false);
+  }
+}}>
+  Override
+</button>
+
+        <button className="cancel-btn" onClick={() => setShowOptions(false)}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
           </div>
         </div>
 
@@ -365,7 +486,8 @@ const uploadUrl = data.uploadUrl;
                   .map((file, idx) => (
                     <tr key={idx}>
                       <td className="history-file-name">
-                        {getFileIcon(file.name)} <span>{file.name}</span>
+                        {getFileIcon(file.name)} <span>{<div className="file-name" title={file.name}>{file.name}</div>
+                      }</span>
                       </td>
                       <td>{new Date(file.lastModified).toLocaleString()}</td>
                       <td><FaCheck color="green" /> {file.status}</td>

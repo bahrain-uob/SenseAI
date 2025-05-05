@@ -8,11 +8,9 @@
 }
 
 .page-wrapper {
-  max-width: 1280px;
-  margin: 0 auto;
   display: flex;
-  gap: 7rem;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 2rem;
 }
 
 .page-left {
@@ -24,19 +22,22 @@
 
 .page-right {
   background-color: white;
-  padding: 2rem;
+  padding: 5rem;
   text-align: center;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  flex: 2;
+  flex: 1 1 400px;
+  max-width: none; 
+  width: 100%;      
 }
 
 .page-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  text-align: left;
-  margin-bottom: 1.2rem;
+  margin-top: 0.5rem; /* ↓ Reduce from default or previous value */
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  font-weight: 700;
   color: #0b1743;
+  text-align: left;
 }
 
 .filter-bar {
@@ -136,26 +137,45 @@
   overflow-x: auto;
 }
 
-table {
+.table-container table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
 }
 
-thead {
+.table-container thead {
   background-color: #0b1743;
   text-align: left;
   font-size: 13px;
   color: white;
 }
 
-thead th,
-tbody td {
-  padding: 0.6rem 0.9rem;
+.table-container table th {
+  background-color: #0b1743;
+  color: white;
+  padding: 12px;
+  font-weight: bold;
+  font-size: 14px;
+  text-align: left;
 }
 
-tbody tr:hover {
-  background-color: #f9f9f9;
+.table-container table td {
+  padding: 10px;
+  font-size: 13px;
+  text-align: left;
+}
+.table-container tbody tr {
+  border: 1.5px solid #0b1743;         /* Add border to rows */
+  border-radius: 6px;             /* Optional: rounded corners */
+  margin-bottom: 6px;             /* Add vertical spacing */
+  background-color: white;        /* Ensure background is solid */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Subtle shadow */
+}
+
+.table-container table tbody tr:hover {
+  background-color: #f0f4ff; /* subtle light blue hover */
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
 }
 
 .risk-badge {
@@ -192,6 +212,91 @@ tbody tr:hover {
   color: #c39b3b;
 }
 
+.analysis-card,
+.stats-card,
+.filter-bar input,
+.filter-bar select {
+  transition: all 0.3s ease;
+  box-shadow: 0 0 0 transparent;
+}
+
+.analysis-card:hover,
+.stats-card:hover,
+.filter-bar input:hover,
+.filter-bar select:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+.filter-bar input:focus,
+.filter-bar select:focus {
+  outline: none;
+  border-color: #c39b3b;
+  box-shadow: 0 0 0 2px rgba(195, 155, 59, 0.3);
+}
+
+.stats-card {
+  flex: 1 1 250px; /* Allow cards to expand responsively */
+  padding: 1.5rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  text-align: left;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* subtle shadow */
+  transition: box-shadow 0.3s ease;
+}
+
+.stats-card .count {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+
+.stats-card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* hover depth */
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  gap: 0.5rem;
+}
+
+.pagination button {
+  padding: 5px 12px;
+  border: 1px solid #ccc;
+  background-color: white;
+  color: #0b1743;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.pagination button.active {
+  background-color: #0b1743;
+  color: white;
+}
+
+.stats-row {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+@media (max-width: 768px) {
+  .stats-row {
+    flex-direction: column;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .stats-card {
+    width: 100%;
+  }
+}
 
 
   

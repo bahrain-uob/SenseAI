@@ -3,7 +3,9 @@ import { MyCdkStack } from "../lib/my-cdk-app-stack";
 import { DBStack } from "../lib/DBstack"; // Import your DBStack
 import { APIStack } from "../lib/api-stack"; // Import your APIStack
 import { SagemakerStack } from "../lib/sagemaker-stack";
-
+import { ReplaceStack } from "../lib/replace-stack";
+import { AnomalyStack } from '../lib/anomaly-stack';
+import { PreprocessingStack } from '../lib/preprocessing-stack';
 const app = new cdk.App();
 
 // Create the DBStack
@@ -22,3 +24,9 @@ const { AuthStack } = require('../lib/auth-stack');
 new AuthStack(app, 'SenseAI-Auth');
 
 new SagemakerStack(app, "SagemakerStack");
+
+new ReplaceStack(app, 'ReplaceStack');
+
+new AnomalyStack(app, 'AnomalyStack');
+
+new PreprocessingStack(app, 'PreprocessingStack');

@@ -17,11 +17,17 @@ const Home = () => {
   ]);
 
   const [highRiskTransactions, setHighRiskTransactions] = useState([
-    { id: 'TRX1345', risk: 92, level: 'Critical', port: 'Khalifa Bin Salman Port', pending: '10 days' },
-    { id: 'TRX6722', risk: 85, level: 'High', port: 'Khalifa Bin Salman Port', pending: '5 days' },
-    { id: 'TRX9102', risk: 67, level: 'Medium', port: 'King Fahd Causeway ', pending: '3 days' },
-    { id: 'TRX4678', risk: 45, level: 'Low', port: 'Bahrain International Airport', pending: '1 day' },
-    { id: 'TRX2746', risk: 40, level: 'Low', port: 'King Fahd Causeway ', pending: '1 day' },
+    { id: 'TRX1345', risk: 98, level: 'Critical', port: 'Khalifa Bin Salman Port', pending: '10 days' },
+    { id: 'TRX1395', risk: 97, level: 'Critical', port: 'Khalifa Bin Salman Port', pending: '12 days' },
+    { id: 'TRX1335', risk: 96, level: 'Critical', port: 'Khalifa Bin Salman Port', pending: '15 days' },
+    { id: 'TRX6722', risk: 96, level: 'Critical', port: 'Khalifa Bin Salman Port', pending: '5 days' },
+    { id: 'TRX9102', risk: 91, level: 'Critical', port: 'King Fahd Causeway ', pending: '3 days' },
+
+    { id: 'TRX9222', risk: 88, level: 'High', port: 'King Fahd Causeway ', pending: '2 days' },
+    { id: 'TRX4678', risk: 88, level: 'High', port: 'Bahrain International Airport', pending: '1 day' },
+    { id: 'TRX2746', risk: 86, level: 'High', port: 'King Fahd Causeway ', pending: '1 day' },
+    { id: 'TRX2776', risk: 86, level: 'High', port: 'King Fahd Causeway ', pending: '4 day' },
+    { id: 'TRX4888', risk: 85, level: 'High', port: 'Bahrain International Airport', pending: '2 day' },
   ]);
 
   const handleDismiss = (id) => {
@@ -58,6 +64,24 @@ const Home = () => {
           
           {/* Left Column */}
           <div className="left-column">
+            {/*pass port as a query parameter */}
+          <div className="port-strip">
+  <button className="port-button" onClick={() => navigate('/pages/auditing?port=Airport')}>
+    <FaPlane /> {t('airport')}
+  </button>
+  <button className="port-button" onClick={() => navigate('/pages/auditing?port=LandPort')}>
+    <FaTruckMoving /> {t('landport')}
+  </button>
+  <button className="port-button" onClick={() => navigate('/pages/auditing?port=SeaPort')}>
+    <FaShip /> {t('seaport')}
+  </button>
+  <button className="port-button" onClick={() => navigate('/pages/auditing')}>
+    <FaSyncAlt /> {t('allport')}
+  </button>
+</div>
+
+
+
 
             {/* High Risk Transactions */}
             <div className="high-risk-card">
@@ -98,11 +122,11 @@ const Home = () => {
               </table>
             </div>
 
-            {/* Ports Links */}
-            <div className="ports-links-card">
+            {/* Ports Links <div className="ports-links-card">
               {[
                 { icon: <FaPlane />, text: t('airport'), link: '/airport' },
-                { icon: <FaTruckMoving />, text: t('landport'), link: '/landport' },
+                { icon: <FaTruckMoving />, text: t('landport'), link: '/pages/landport' },
+
                 { icon: <FaShip />, text: t('seaport'), link: '/seaport' },
                 { icon: null, text: t('allport'), link: '/allports' },
               ].map((port, idx) => (
@@ -117,7 +141,8 @@ const Home = () => {
                 </div>
               ))}
             </div>
-
+*/}
+            
           </div>
 
           {/* Right Column */}

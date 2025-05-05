@@ -65,20 +65,10 @@ html, body {
     min-height: 200px; /* right column cards */
   }
   
-  /* Refresh Button */
-  .refresh-button {
-    background-color: #c7a349;
-    color: white;
-    padding: 6px 14px;
-    font-size: 14px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
+ 
   
-  .refresh-button:hover {
-    background-color: #b59036;
+  .title-risk-table{
+    background-color: #0b1543;
   }
   
   /* High Risk Table */
@@ -95,7 +85,7 @@ html, body {
   }
   
   .high-risk-table tr:hover {
-    background-color: #f9f9f9;
+    background-color: #b4b0b0;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   transition: all 0.3s ease;
   transform: translateY(-2px);
@@ -209,7 +199,7 @@ html, body {
   .title-risk-table{
     font-weight: 600; /* Bold */
     font-size: 13px;
-    color: #a28439; /* Keep it black for good visibility */
+    color: white; /* Keep it black for good visibility */
     margin-bottom: 4px;
   }
   .empty-notifications {
@@ -250,4 +240,30 @@ html, body {
     margin-bottom: 8px;
     font-weight: bold;
   }
+  .port-strip {
+    display: flex;
+    gap: 2rem;
+    margin: 0rem 0 1rem;
+    padding-left: 0.2rem;
+  }
+  
+  .port-button {
+    background-color: #0b1743;
+    color: white;
+    padding: 14px 14px;
+    font-size: 13px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 150px;
+  }
+  
+  .port-button:hover {
+    background-color: #c7a349;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    transform: translateY(-2px);
+  }
+  
   

@@ -91,3 +91,7 @@
   font-size: 14px;
   width: 150px;
 }
+.activities-table thead{
+  background-color: #060640;
+  color: white;
+}
