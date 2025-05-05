@@ -1,4 +1,5 @@
 import * as cdk from "aws-cdk-lib";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as s3 from "aws-cdk-lib/aws-s3"
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
@@ -172,6 +173,47 @@ export class APIStack extends cdk.Stack {
           allowOrigins: ["https://d10uresn4y47do.cloudfront.net"],
           allowMethods: ["GET","OPTIONS"],
         });
+
+        
+//Bedrock endpoint configuration for the chatbot 
+        const chatBedrockLambda = new lambda.Function(this, "ChatBedrockLambda", {
+          runtime: lambda.Runtime.PYTHON_3_11,
+          handler: "chatbedrock.handler", // Path: lambda/chatbedrock.py
+          code: lambda.Code.fromAsset("lambda"),
+          environment: {
+            KNOWLEDGE_BASE_ID: "FAIIYRNX5D",  // ← Replace this
+          },
+        });
+        chatBedrockLambda.addToRolePolicy(new iam.PolicyStatement({
+          actions: ["bedrock:RetrieveAndGenerate"],
+          resources: ["*"]
+        }));
+
+        const chatbedrock = api.root.addResource("chatbedrock");
+        chatbedrock.addMethod("POST", new apigateway.LambdaIntegration(chatBedrockLambda), {
+          authorizationType: apigateway.AuthorizationType.NONE,
+          methodResponses: [
+            {
+              statusCode: "200",
+              responseParameters: {
+                "method.response.header.Access-Control-Allow-Origin": true,
+                "method.response.header.Access-Control-Allow-Headers": true,
+                "method.response.header.Access-Control-Allow-Methods": true,
+              },
+            },
+          ],
+        });
+        chatbedrock.addCorsPreflight({
+          allowOrigins: [
+            "http://localhost:3000", // Local dev
+            "https://d10uresn4y47do.cloudfront.net" // Production
+          ],
+          allowMethods: ["POST", "OPTIONS"],
+          allowHeaders: ["Content-Type"]
+        });
+
+        
+        
         
     
 
@@ -192,5 +234,6 @@ export class APIStack extends cdk.Stack {
     new cdk.CfnOutput(this, "ApiEndpoint", {
       value: api.url,  // Combined API URL
     });
+
   }
 }

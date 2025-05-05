@@ -1,1 +1,1 @@
-1- First integration
+Bedrock endpoint done in the API stack
