@@ -111,7 +111,7 @@ html, body {
   .nav-item:hover::after {
     width: 100%;
   }
-
+/*/////////////////////////////////////////////////////////////////Home Page/////////////////////////////////////////////////////////*/
   .port-link {
     display: flex;
     justify-content: space-between;
@@ -161,40 +161,6 @@ html, body {
   .chatbot-button {
     animation: bounce 1.5s ease-in-out infinite;
   }
-  .hover-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    cursor: pointer;
-  }
-  
-  .hover-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  }
-  
-  .activity-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-    padding: 10px 0;
-    font-size: 14px;
-  }
-  
-  .port-link {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ccc;
-    padding: 10px 0;
-    font-size: 16px;
-  }
-  @keyframes glow {
-    0% {
-      filter: drop-shadow(0 0 4px #ffeaa7);
-    }
-    100% {
-      filter: drop-shadow(0 0 8px #ffd54f);
-    }
-  }
-  
+
+
   

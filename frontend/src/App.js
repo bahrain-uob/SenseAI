@@ -5,19 +5,20 @@ import Login from "./logIn";
 import HomePage from "./pages/HomePage";
 import Home from "./pages/Home";
 import Upload from "./Upload";
-import Activities from "./pages/Activities";
+import Activities from "./pages/EmployeeActivities";
 import Auditing from "./pages/Auditing";
 import Chatbot from "./pages/Chatbot";
 import Air from "./pages/Air";
 import Land from "./Land";
 import Sea from "./Sea";
 import AllPorts from "./pages/Allports";
-
+import ScrollToTop from './ScrollToTop'; // adjust the path
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false); // check authntication
   return (
     <Router>
+       <ScrollToTop />
       <Routes>
         <Route
           path="/login"
@@ -27,7 +28,7 @@ function App() {
           path="/*"
           element={
             isAuthenticated ? (
-              <HomePage>
+              <HomePage> 
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/pages/upload" element={<Upload />} />
