@@ -211,6 +211,42 @@ export class APIStack extends cdk.Stack {
           allowMethods: ["POST", "OPTIONS"],
           allowHeaders: ["Content-Type"]
         });
+        
+//Employee activities integration        
+        // Lambda to retrieve employee activity logs
+        const getEmployeeActivitiesLambda = new lambda.Function(this, "GetEmployeeActivitiesLambda", {
+          runtime: lambda.Runtime.PYTHON_3_11,
+          handler: "getEmployeeActivities.handler",
+          code: lambda.Code.fromAsset("lambda"),
+          environment: {
+            ACTIVITY_TABLE_NAME: dbStack.activityTable.tableName,
+          },
+        });
+
+        // Grant read permissions to the table
+        dbStack.activityTable.grantReadData(getEmployeeActivitiesLambda);
+
+        // API Gateway resource
+        const activities = api.root.addResource("employee-activities");
+        activities.addMethod("GET", new apigateway.LambdaIntegration(getEmployeeActivitiesLambda), {
+          authorizationType: apigateway.AuthorizationType.NONE,
+          methodResponses: [
+            {
+              statusCode: "200",
+              responseParameters: {
+                "method.response.header.Access-Control-Allow-Origin": true,
+                "method.response.header.Access-Control-Allow-Headers": true,
+                "method.response.header.Access-Control-Allow-Methods": true,
+              },
+            },
+          ],
+        });
+
+        activities.addCorsPreflight({
+          allowOrigins: ["http://localhost:3000", "https://d10uresn4y47do.cloudfront.net"],
+          allowMethods: ["GET", "OPTIONS"],
+        });
+
 
         
         
