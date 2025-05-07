@@ -121,7 +121,7 @@ export class APIStack extends cdk.Stack {
               });
               
               upload.addCorsPreflight({
-                allowOrigins: ["https://d10uresn4y47do.cloudfront.net"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
+                allowOrigins: ["http://localhost:3000", "https://d10uresn4y47do.cloudfront.net"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
                 allowMethods: ["GET","PUT"],
                 
               });
@@ -144,7 +144,7 @@ export class APIStack extends cdk.Stack {
                         }); 
                         
                         uploadobj.addCorsPreflight({
-                          allowOrigins: ["https://d10uresn4y47do.cloudfront.net"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
+                          allowOrigins: ["http://localhost:3000", "https://d10uresn4y47do.cloudfront.net"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
                           allowMethods: ["GET","OPTIONS"],
                           
                         });
@@ -170,7 +170,7 @@ export class APIStack extends cdk.Stack {
         }); 
 
         uploadhistory.addCorsPreflight({
-          allowOrigins: ["https://d10uresn4y47do.cloudfront.net"],
+          allowOrigins: ["http://localhost:3000", "https://d10uresn4y47do.cloudfront.net"],
           allowMethods: ["GET","OPTIONS"],
         });
 
