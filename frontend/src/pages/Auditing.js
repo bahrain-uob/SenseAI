@@ -8,6 +8,9 @@ import {
 } from 'recharts';
 
 import './Auditing.css';
+import { Link } from 'react-router-dom';
+import TransactionDetail from './TransactionDetail';
+
 
 const allTransactions = Array.from({ length: 100 }, (_, i) => {
   const risk = Math.floor(Math.random() * 100) + 1;
@@ -321,7 +324,8 @@ const goToPage = (page) => {
         return (
           <tr key={i} style={{ backgroundColor: rowBg }}>
             <td><span className={`risk-badge ${getRiskClass(tx.risk)}`}>{tx.risk}%</span></td>
-            <td>{tx.id}</td>
+            <td><Link to={`/pages/transaction/${tx.id}`} className="transaction-link">{tx.id}</Link>
+            </td>
             <td>{tx.hs}</td>
             <td>{tx.weight}</td>
             <td>{tx.value}</td>

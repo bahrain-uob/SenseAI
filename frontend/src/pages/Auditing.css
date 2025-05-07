@@ -298,5 +298,19 @@
   }
 }
 
+.transaction-link {
+  color: #0b1743;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.transaction-link:hover {
+  color: #475dab;
+  text-decoration: underline;
+  transition: all 0.3s ease;
+    transform: translateY(-2px);
+}
 
   
