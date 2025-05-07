@@ -12,6 +12,7 @@ import Air from "./pages/Air";
 import Land from "./Land";
 import Sea from "./Sea";
 import AllPorts from "./pages/Allports";
+import TransactionDetail from "./pages/TransactionDetail"
 import ScrollToTop from './ScrollToTop'; // adjust the path
 
 function App() {
@@ -39,6 +40,9 @@ function App() {
                   <Route path="/pages/landport" element={<Land />} />
                   <Route path="/pages/seaport" element={<Sea />} />
                   <Route path="/pages/allports" element={<AllPorts />} />
+                  <Route path="/pages/transaction/:id" element={<TransactionDetail />} />
+
+
                 </Routes>
               </HomePage>
             ) : (
