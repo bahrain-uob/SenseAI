@@ -1,110 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './EmployeeActivities.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
-
-const allActivities = [
-  {
-    date: '2023-04-24',
-    time: '10:30 AM',
-    employee: 'Ahmed',
-    action: 'Inspection',
-    transaction: 'TRX123456',
-  },
-  {
-    date: '2023-04-23',
-    time: '03:00 PM',
-    employee: 'Ali',
-    action: 'Edit',
-    transaction: 'TRX11111',
-  },
-  {
-    date: '2023-04-22',
-    time: '09:00 AM',
-    employee: 'Fahad',
-    action: 'Upload',
-    transaction: 'TRX999999',
-  },
-  {
-    date: '2023-04-21',
-    time: '11:15 AM',
-    employee: 'Sara',
-    action: 'Inspection',
-    transaction: 'TRX654321',
-  },
-  {
-    date: '2023-04-21',
-    time: '03:00 PM',
-    employee: 'Sara',
-    action: 'Upload',
-    transaction: 'TRX654321',
-  },
-  {
-    date: '2023-04-20',
-    time: '02:30 PM',
-    employee: 'Hassan',
-    action: 'Edit',
-    transaction: 'TRX22222',
-  },
-  {
-    date: '2023-04-20',
-    time: '02:00 PM',
-    employee: 'Ahmed',
-    action: 'Edit',
-    transaction: 'TRX123456',
-  },
-  {
-    date: '2023-04-19',
-    time: '04:00 PM',
-    employee: 'Ali',
-    action: 'Inspection',
-    transaction: 'TRX11111',
-  },
-  {
-    date: '2023-04-19',
-    time: '08:45 AM',
-    employee: 'Noura',
-    action: 'Upload',
-    transaction: 'TRX888888',
-  },
-  {
-    date: '2023-04-19',
-    time: '10:30 AM',
-    employee: 'Noura',
-    action: 'Edit',
-    transaction: 'TRX777777',
-  },
-  {
-    date: '2023-04-18',
-    time: '01:00 PM',
-    employee: 'Omar',
-    action: 'Inspection',
-    transaction: 'TRX777777',
-  },
-];
-
-const exportToCSV = () => {
-  const headers = ['Date', 'Time', 'Employee', 'Action', 'Transaction'];
-  const rows = allActivities.map(a => [a.date, a.time, a.employee, a.action, a.transaction]);
-  const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].map(e => e.join(',')).join('\n');
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', 'employee_activities.csv');
-  document.body.appendChild(link);
-  link.click();
-};
+import axios from 'axios';
 
 const EmployeeActivities = () => {
+  const [allActivities, setAllActivities] = useState([]);
   const [employeeFilter, setEmployeeFilter] = useState('All');
   const [actionFilter, setActionFilter] = useState('All');
   const [searchTransaction, setSearchTransaction] = useState('');
   const [dateFilter, setDateFilter] = useState('');
 
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const res = await axios.get('https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities');
+
+        const parsed = res.data.map((item) => {
+  const d = new Date(item.Timestamp); 
+  if (isNaN(d)) return null;
+
+  const [datePart, timePart] = d.toLocaleString().split(', ');
+  return {
+    date: datePart,
+    time: timePart,
+    employee: item.EmployeeName,
+    action: item.Action,
+    transaction: item.TransactionID,
+  };
+}).filter(Boolean); // removes any null entries
+
+
+        setAllActivities(parsed);
+      } catch (err) {
+        console.error('Failed to fetch activities:', err);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
   const filteredActivities = allActivities.filter((act) => {
-    const formattedActDate = new Date(act.date).toISOString().split('T')[0];
+    const formattedActDate = new Date(`${act.date} ${act.time}`);
+    if (isNaN(formattedActDate)) return false;
+
+    const formattedFilterDate = new Date(dateFilter).toLocaleDateString();
+
     return (
-      (dateFilter === '' || formattedActDate === dateFilter) &&
+      (dateFilter === '' || formattedActDate.toLocaleDateString() === formattedFilterDate) &&
       (employeeFilter === 'All' || act.employee === employeeFilter) &&
       (actionFilter === 'All' || act.action === actionFilter) &&
       (searchTransaction === '' || act.transaction.toLowerCase().includes(searchTransaction.toLowerCase()))
@@ -113,6 +56,18 @@ const EmployeeActivities = () => {
 
   const uniqueEmployees = [...new Set(allActivities.map(act => act.employee))];
   const uniqueActions = [...new Set(allActivities.map(act => act.action))];
+
+  const exportToCSV = () => {
+    const headers = ['Date', 'Time', 'Employee', 'Action', 'Transaction'];
+    const rows = filteredActivities.map(a => [a.date, a.time, a.employee, a.action, a.transaction]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].map(e => e.join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'employee_activities.csv');
+    document.body.appendChild(link);
+    link.click();
+  };
 
   return (
     <div className="activities-wrapper">
@@ -134,7 +89,7 @@ const EmployeeActivities = () => {
           <label>Employee</label>
           <select value={employeeFilter} onChange={(e) => setEmployeeFilter(e.target.value)}>
             <option>All</option>
-            {uniqueEmployees.map(emp => <option key={emp}>{emp}</option>)}
+            {uniqueEmployees.map((emp, i) => <option key={`${emp}-${i}`}>{emp}</option>)}
           </select>
         </div>
 
@@ -142,7 +97,7 @@ const EmployeeActivities = () => {
           <label>Action</label>
           <select value={actionFilter} onChange={(e) => setActionFilter(e.target.value)}>
             <option>All</option>
-            {uniqueActions.map(action => <option key={action}>{action}</option>)}
+            {uniqueActions.map((action, i) => <option key={`${action}-${i}`}>{action}</option>)}
           </select>
         </div>
 
