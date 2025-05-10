@@ -8,16 +8,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-<<<<<<< HEAD
   "dependencies": {
     "@aws-sdk/client-sagemaker": "^3.801.0",
     "aws-sdk": "^2.1692.0"
   },
   "description": ""
-=======
-  "description": "",
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.787.0"
-  }
->>>>>>> Dev#2-Activities
 }

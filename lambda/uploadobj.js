@@ -19,7 +19,7 @@ exports.handler = async function (event) {
   return {
     statusCode: 200,
     headers: {
-      "Access-Control-Allow-Origin": "https://d10uresn4y47do.cloudfront.net",
+      "Access-Control-Allow-Origin": "http://localhost:3000",
       "Access-Control-Allow-Headers": "*",
       "Access-Control-Allow-Methods": "GET, POST,PUT, OPTIONS" 
     },
