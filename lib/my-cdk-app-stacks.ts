@@ -6,7 +6,8 @@ import { RemovalPolicy } from "aws-cdk-lib";
 
 export class MyCdkStack extends cdk.Stack {
   public readonly TransactionUploadsBucket: s3.Bucket;
-  public readonly uploadobjBucket: s3.Bucket; // i will check if it nescceary or not
+  public readonly uploadobjBucket: s3.Bucket;
+  public readonly processedBucket: s3.Bucket; // i will check if it nescceary or not
 
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -19,11 +20,16 @@ export class MyCdkStack extends cdk.Stack {
           removalPolicy: cdk.RemovalPolicy.DESTROY,
           autoDeleteObjects: true,
           cors: [{
-            allowedOrigins: ['https://d10uresn4y47do.cloudfront.net'], // Or use your CloudFront URL
+            allowedOrigins: ['*'], // Or use your CloudFront URL
             allowedMethods: [s3.HttpMethods.PUT, s3.HttpMethods.GET, s3.HttpMethods.HEAD,s3.HttpMethods.POST],
             allowedHeaders: ['*'],
           }],
         });
+
+        /* new cdk.CfnOutput(this, 'uploadObjBucketArnOutput', {
+          value: this.uploadobjBucket.bucketName,
+          exportName: 'uploadObjBucketName',
+        }); */
         
     // S3 Bucket for React Website (without public access)
     this.TransactionUploadsBucket = new s3.Bucket(this, "TransactionUploadsBucket ", {
@@ -43,14 +49,29 @@ export class MyCdkStack extends cdk.Stack {
       cors: [
         {
           allowedMethods: [s3.HttpMethods.PUT, s3.HttpMethods.GET, s3.HttpMethods.HEAD],
-          allowedOrigins: ["https://d10uresn4y47do.cloudfront.net"], // Change to your actual domain in production
+          allowedOrigins: ["*"], // Change to your actual domain in production
           allowedHeaders: ["*"],
         },
       ],
     });
 
 
-    
+
+
+    // Processed bucket for output data
+    this.processedBucket = new s3.Bucket(this, "ProcessedBucket", {
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      cors: [{
+        allowedOrigins: ['*'], // Or use your CloudFront URL
+        allowedMethods: [s3.HttpMethods.PUT, s3.HttpMethods.GET, s3.HttpMethods.HEAD,s3.HttpMethods.POST],
+        allowedHeaders: ['*'],
+      }],
+    });
+    new cdk.CfnOutput(this, 'ProcessedBucketNameExport', {
+      value: this.processedBucket.bucketName,
+      exportName: 'ProcessedBucketName',
+    });
 
     // Deploy React App to S3
     new s3deploy.BucketDeployment(this, "DeployWebsite", {

@@ -3,19 +3,32 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as s3 from "aws-cdk-lib/aws-s3"
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import { DBStack } from "./DBstack"; // Import DBStack
-
-import { MyCdkStack } from "./my-cdk-app-stack";
-
-
-
-
+import * as iam from "aws-cdk-lib/aws-iam";
+import * as s3n from "aws-cdk-lib/aws-s3-notifications";
+import { MyCdkStack } from "./my-cdk-app-stacks";
 
 export class APIStack extends cdk.Stack {
+  public readonly rawBucket: s3.Bucket;
+  public readonly processedBucket: s3.Bucket;
+  public readonly dynamoTable: string;
+  public readonly uploadobjBucket: s3.Bucket;
   public readonly TransactionUploadsBucket: s3.Bucket;
-  constructor(scope: cdk.App, id: string, dbStack: DBStack,TransactionUploadsBucket:s3.Bucket,uploadobjBucket:s3.Bucket, props?: cdk.StackProps,) {
+  /* constructor(
+    scope: cdk.App, id: string,dbStack: DBStack,processedBucket: s3.Bucket,dynamoTable: string, 
+    TransactionUploadsBucket:s3.Bucket,uploadobjBucket:s3.Bucket, props?: cdk.StackProps,
+  
+  ) */ constructor(
+  scope: cdk.App,
+  id: string,
+  dbStack: DBStack,
+  processedBucket: s3.Bucket,
+  dynamoTable: string,
+  uploadobjBucket: s3.Bucket,
+  props?: cdk.StackProps
+){
     super(scope, id, props);
 
-            const uploadBucket = TransactionUploadsBucket;
+            /* const uploadBucket = TransactionUploadsBucket;
             const GetUploadUrlLambda = new lambda.Function(this, "GetUploadUrlLambda", {
                 runtime: lambda.Runtime.NODEJS_18_X,
                 handler: "getUploadUrl.handler",
@@ -26,7 +39,8 @@ export class APIStack extends cdk.Stack {
             });
             
             // Give Lambda permission to upload to S3
-            uploadBucket.grantPut(GetUploadUrlLambda);
+            uploadBucket.grantPut(GetUploadUrlLambda); */
+
 
     // Lambda function to insert sample cases into DynamoDB
     const insertSampleCaseLambda = new lambda.Function(this, "InsertSampleCaseLambda", {
@@ -100,37 +114,15 @@ export class APIStack extends cdk.Stack {
     // Create the API Gateway
     const api = new apigateway.RestApi(this, "[SenseAI]Api", {
       restApiName: " SensAI Service",
+      description: "This is the existing API"
+
     });
-    //upload api path to upload transaction
-    const upload = api.root.addResource("upload");
-    upload.addMethod("GET", new apigateway.LambdaIntegration(GetUploadUrlLambda), { //for testing
-                authorizationType: apigateway.AuthorizationType.NONE,
-                methodResponses: [
-                  {
-                     
-                    statusCode: "200",
-                    responseParameters: {
-                      "method.response.header.Access-Control-Allow-Origin": true,
-                      "method.response.header.Access-Control-Allow-Headers": true,
-                      "method.response.header.Access-Control-Allow-Methods": true,
-                    },
-      
-                  },
-                ],
-              });
-              
-              upload.addCorsPreflight({
-                allowOrigins: ["https://d10uresn4y47do.cloudfront.net"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
-                allowMethods: ["GET","PUT"],
-                
-              });
-    
+
         const uploadobj = api.root.addResource("uploadobj");
               uploadobj.addMethod("GET", new apigateway.LambdaIntegration(uploadLambda), { //for testing
                           authorizationType: apigateway.AuthorizationType.NONE,
                           methodResponses: [
                             {
-                               
                               statusCode: "200",
                               responseParameters: {
                                 "method.response.header.Access-Control-Allow-Origin": true,
@@ -143,10 +135,27 @@ export class APIStack extends cdk.Stack {
                         }); 
                         
                         uploadobj.addCorsPreflight({
-                          allowOrigins: ["https://d10uresn4y47do.cloudfront.net"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
+                          allowOrigins: ["http://localhost:3000"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
                           allowMethods: ["GET","OPTIONS"],
                           
                         });
+ 
+                  // Adding POST method
+                  uploadobj.addMethod("POST", new apigateway.LambdaIntegration(uploadLambda), {
+                    authorizationType: apigateway.AuthorizationType.NONE,
+                    methodResponses: [
+                      {
+                        statusCode: "200",
+                        responseParameters: {
+                          "method.response.header.Access-Control-Allow-Origin": true,
+                          "method.response.header.Access-Control-Allow-Headers": true,
+                          "method.response.header.Access-Control-Allow-Methods": true,
+                        },
+                      },
+                    ],
+                  });
+
+
 
 
         const uploadhistory = api.root.addResource('uploadhistory');
@@ -169,10 +178,101 @@ export class APIStack extends cdk.Stack {
         }); 
 
         uploadhistory.addCorsPreflight({
-          allowOrigins: ["https://d10uresn4y47do.cloudfront.net"],
+          allowOrigins: ["http://localhost:3000"],
           allowMethods: ["GET","OPTIONS"],
         });
         
+
+        /* const processedBucketName = cdk.Fn.importValue('ProcessedBucketName'); */
+    // Lambda: TriggerPreprocessingLambda
+        const triggerPreprocessingLambda = new lambda.Function(this, "TriggerPreprocessingLambda", {
+          runtime: lambda.Runtime.NODEJS_18_X,
+          handler: "triggerPreprocessingJob.handler",
+          code: lambda.Code.fromAsset("lambda"),
+          environment: {
+            SAGEMAKER_ROLE_ARN: "arn:aws:iam::123456789012:role/SageMakerExecutionRole",
+            IMAGE_URI: "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-preprocessing-image:latest",
+            INPUT_S3_URI: uploadobjBucket.bucketName,
+            OUTPUT_S3_URI: `s3://${processedBucket.bucketName}/prefinal-output/`, // updated path
+          },
+        });
+    
+        // Allow Trigger Lambda to create SageMaker jobs
+        triggerPreprocessingLambda.addToRolePolicy(
+          new iam.PolicyStatement({
+            actions: ["sagemaker:CreateProcessingJob"],
+            resources: ["*"],
+          })
+        );
+    
+        // Trigger the Lambda when a new object is created in raw bucket
+        uploadobjBucket.addEventNotification(
+          s3.EventType.OBJECT_CREATED,
+          new s3n.LambdaDestination(triggerPreprocessingLambda)
+        );
+
+        const preProcessing = api.root.addResource("pre-processing");
+    
+        // POST Method: Trigger the Preprocessing Job
+        preProcessing.addMethod("POST", new apigateway.LambdaIntegration(triggerPreprocessingLambda), {
+        authorizationType: apigateway.AuthorizationType.NONE,
+        methodResponses: [
+            {
+            statusCode: "200",
+            responseParameters: {
+                "method.response.header.Access-Control-Allow-Origin": true,
+                "method.response.header.Access-Control-Allow-Headers": true,
+                "method.response.header.Access-Control-Allow-Methods": true,
+            },
+            },
+        ],
+        });
+    
+        // Lambda: ProcessedDataStoringLambda
+        const processedDataStoringLambda = new lambda.Function(this, "ProcessedDataStoringLambda", {
+          runtime: lambda.Runtime.NODEJS_18_X,
+          handler: "processedDataStoring.handler",
+          code: lambda.Code.fromAsset("lambda"),
+          environment: {
+            INPUT_PREFIX: "prefinal-output/",            // Read from this folder
+            OUTPUT_BUCKET: processedBucket.bucketName,   // Still the same bucket
+            OUTPUT_PREFIX: "final-processed/",           // Write to this folder
+            DYNAMODB_TABLE_NAME: dynamoTable,            // DynamoDB table name
+          },
+        });
+    
+        // Allow Lambda to access both read & write in processed bucket
+        processedBucket.grantReadWrite(processedDataStoringLambda);
+    
+        // Grant permission to write to DynamoDB table
+        processedDataStoringLambda.addToRolePolicy(
+          new iam.PolicyStatement({
+            actions: ["dynamodb:PutItem"],
+            resources: [`arn:aws:dynamodb:us-east-1:123456789012:table/${dynamoTable}`],
+          })
+        );
+    
+    
+        // GET Method: Store the Processed Data
+        preProcessing.addMethod("GET", new apigateway.LambdaIntegration(processedDataStoringLambda), {
+        authorizationType: apigateway.AuthorizationType.NONE,
+        methodResponses: [
+            {
+            statusCode: "200",
+            responseParameters: {
+                "method.response.header.Access-Control-Allow-Origin": true,
+                "method.response.header.Access-Control-Allow-Headers": true,
+                "method.response.header.Access-Control-Allow-Methods": true,
+            },
+            },
+        ],
+        });
+    
+        // CORS Preflight for both method
+        preProcessing.addCorsPreflight({
+        allowOrigins: ["http://localhost:3000"], // Allow from all origins or specify your frontend domain
+        allowMethods: ["GET", "OPTIONS","POST"],
+        });
     
 
     /* // Resource for '/cases' to insert new case

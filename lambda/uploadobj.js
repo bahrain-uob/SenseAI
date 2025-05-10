@@ -16,13 +16,21 @@ exports.handler = async function (event) {
 
   const signedUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
 
+  const allowedOrigins = ['http://localhost', 'http://localhost:3000'];
+  const requestOrigin = event.headers.origin;
+
+  const responseHeaders = {
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
+  };
+
+  if (allowedOrigins.includes(requestOrigin)) {
+    responseHeaders["Access-Control-Allow-Origin"] = requestOrigin;
+  }
+
   return {
     statusCode: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "https://d10uresn4y47do.cloudfront.net",
-      "Access-Control-Allow-Headers": "*",
-      "Access-Control-Allow-Methods": "GET, POST,PUT, OPTIONS" 
-    },
+    headers: responseHeaders,
     body: JSON.stringify({ uploadUrl: signedUrl }),
   };
 };
