@@ -3,6 +3,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as s3 from "aws-cdk-lib/aws-s3"
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
+import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import { DBStack } from "./DBstack"; // Import DBStack
 
 import { MyCdkStack } from "./my-cdk-app-stack";
@@ -65,6 +66,32 @@ export class APIStack extends cdk.Stack {
       handler: "index.handler",
       code: lambda.Code.fromAsset("lambda"),
     });
+    //lambda function tp parse the uploaded file and insert it into Dynamo
+    const parseAndInsertLambda = new lambda.Function(this, 'parseAndInsertLambda', {
+        runtime: lambda.Runtime.NODEJS_18_X,
+        handler: 'parseAndInsert.handler',
+        code: lambda.Code.fromAsset('lambda'), // folder with parseAndInsertLambda.js
+        environment: {
+          TABLE_NAME: dbStack.rawTransTable.tableName,
+        },
+      });
+
+      // 🔐 Grant S3 read permission
+      uploadobjBucket.grantRead(parseAndInsertLambda);
+
+      // 🔐 Grant DynamoDB write permission
+      dbStack.rawTransTable.grantWriteData(parseAndInsertLambda);
+
+      // 📩 Add S3 event trigger
+      uploadobjBucket.addEventNotification(
+        s3.EventType.OBJECT_CREATED,
+        new s3n.LambdaDestination(parseAndInsertLambda)
+      );
+
+
+
+
+
     // Lambda function for uploaidng objects to uploadbucket s3
     const uploadLambda = new lambda.Function(this, 'uploadLambda', {
           runtime: lambda.Runtime.NODEJS_18_X,

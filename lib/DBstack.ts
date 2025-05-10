@@ -5,6 +5,7 @@ import { RemovalPolicy } from "aws-cdk-lib";
 export class DBStack extends cdk.Stack {
   public readonly casesTable: dynamodb.Table;
   public readonly activityTable: dynamodb.Table;
+  public readonly rawTransTable: dynamodb.Table;
 
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -23,5 +24,17 @@ export class DBStack extends cdk.Stack {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
     });
+
+
+    this.rawTransTable = new dynamodb.Table(this, 'RawTransTable', {
+      tableName: 'RawTrans',
+      partitionKey: {
+        name: 'INDEX',
+        type: dynamodb.AttributeType.STRING,
+      },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // change to RETAIN for production
+    });
+
   }
 }
