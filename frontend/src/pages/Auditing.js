@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FaEye } from 'react-icons/fa';
 import CountUp from 'react-countup';
@@ -396,4 +395,5 @@ const goToPage = (page) => {
     </div>
   );
 }
+
 
