@@ -201,21 +201,27 @@ export class APIStack extends cdk.Stack {
         });
 
         
-//Bedrock endpoint configuration for the chatbot 
+// Bedrock endpoint configuration for the chatbot
         const chatBedrockLambda = new lambda.Function(this, "ChatBedrockLambda", {
           runtime: lambda.Runtime.PYTHON_3_11,
-          handler: "chatbedrock.handler", // Path: lambda/chatbedrock.py
-          code: lambda.Code.fromAsset("lambda"),
+          handler: "query_kb_lambda.lambda_handler", 
+          code: lambda.Code.fromAsset("lambda"),     
           environment: {
-            KNOWLEDGE_BASE_ID: "FAIIYRNX5D",  // ← Replace this
+            KNOWLEDGE_BASE_ID: "FAIIYRNX5D",
+            MODEL_ARN: "arn:aws:bedrock:eu-west-1::foundation-model/mistral.mixtral-8x7b-instruct-v0:1"
           },
+          timeout: cdk.Duration.seconds(30)
         });
+
+        // IAM permission to use Bedrock RetrieveAndGenerate
         chatBedrockLambda.addToRolePolicy(new iam.PolicyStatement({
           actions: ["bedrock:RetrieveAndGenerate"],
           resources: ["*"]
         }));
 
+        // API Gateway route
         const chatbedrock = api.root.addResource("chatbedrock");
+
         chatbedrock.addMethod("POST", new apigateway.LambdaIntegration(chatBedrockLambda), {
           authorizationType: apigateway.AuthorizationType.NONE,
           methodResponses: [
@@ -224,19 +230,22 @@ export class APIStack extends cdk.Stack {
               responseParameters: {
                 "method.response.header.Access-Control-Allow-Origin": true,
                 "method.response.header.Access-Control-Allow-Headers": true,
-                "method.response.header.Access-Control-Allow-Methods": true,
-              },
-            },
-          ],
+                "method.response.header.Access-Control-Allow-Methods": true
+              }
+            }
+          ]
         });
+
+        // Enable CORS
         chatbedrock.addCorsPreflight({
           allowOrigins: [
-            "http://localhost:3000", // Local dev
-            "https://d10uresn4y47do.cloudfront.net" // Production
+            "http://localhost:3000",
+            "https://d10uresn4y47do.cloudfront.net"
           ],
           allowMethods: ["POST", "OPTIONS"],
           allowHeaders: ["Content-Type"]
         });
+
         
 //Employee activities integration        
         // Lambda to retrieve employee activity logs
