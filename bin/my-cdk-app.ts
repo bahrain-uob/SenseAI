@@ -6,16 +6,24 @@ import { SagemakerStack } from "../lib/sagemaker-stack";
 import { ReplaceStack } from "../lib/replace-stack";
 import { AnomalyStack } from '../lib/anomaly-stack';
 import { PreprocessingStack } from '../lib/preprocessing-stack';
+import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
+import * as s3 from "aws-cdk-lib/aws-s3";
 const app = new cdk.App();
 
 // Create the DBStack
 const dbStack = new DBStack(app, "DBStack", {
   // Any custom stack props you may have for DBStack
 });
-const MyCdkAppStack = new MyCdkStack(app, "MyCdkAppStack");
+const MyCdkAppStack = new MyCdkStack(app, "MyCdkAppStack",dbStack.rawTransTable);
 
 // Create the APIStack, passing in the DBStack as a dependency
-new APIStack(app, "APIStack", dbStack, MyCdkAppStack.TransactionUploadsBucket,MyCdkAppStack.uploadobjBucket); // Pass the DBStack as the second argument
+const apistack= new APIStack(app, "APIStack", dbStack, MyCdkAppStack.TransactionUploadsBucket,MyCdkAppStack.uploadobjBucket); 
+
+
+
+
+
+// Pass the DBStack as the second argument
 
 /* // Optionally, you can create your other stacks here if needed
 new MyCdkStack(app, "MyCdkAppStack");
