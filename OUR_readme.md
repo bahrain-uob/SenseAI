@@ -9,6 +9,8 @@ Dev#2
 Dev#3
 
 in lambda/
+npm init -y
+npm install aws-sdk
 npm install @aws-sdk/client-s3 @aws-sdk/client-dynamodb xlsx
 
 
