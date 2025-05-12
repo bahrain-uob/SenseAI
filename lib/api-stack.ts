@@ -196,7 +196,7 @@ export class APIStack extends cdk.Stack {
         }); 
 
         uploadhistory.addCorsPreflight({
-          allowOrigins: ["http://localhost:3000'"],
+          allowOrigins: ["http://localhost:3000"],
           allowMethods: ["GET","OPTIONS"],
         });
 
@@ -275,7 +275,7 @@ export class APIStack extends cdk.Stack {
 
       // Lambda function for RawTrans
       const getFromTransRawLambda = new lambda.Function(this, 'GetFromTransRawLambda', {
-        runtime: lambda.Runtime.NODEJS_18_X,
+        runtime: lambda.Runtime.PYTHON_3_11,
         handler: 'getFromTransRaw.handler',
         code: lambda.Code.fromAsset('lambda'),
         environment: {

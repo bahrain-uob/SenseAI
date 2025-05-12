@@ -7,11 +7,25 @@ Dev#2
 ----> The endpoint to retrieve from the table is also created
 
 Dev#3
+---->RawTrans table is created with primary key = rowid
+----> created lambda that convert excel to a dynamoDB records
+ (when file uploaded it will be inserted in RawTrans table in dynamo)
+----> created lambda (no glue) that fetch records from RawTrnas table (for frontend use) 
+----> endpoint url : https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/RawTransaction (tested ✅)
+----> excel file for testing : will be found in the repo when it pulled,
+two cloumns are added (rowid (becuse there is no uniqe cloumn) + risk_percentage)
+----> a composed key will be used later combining (reference number + item number)
+----> python script created that delete all items inside RawTrans table
+ (run it before uploading something for testing ex: if you add new cloumn)
+inside the lambda folder run this in command line : python3 delete_rawtransaction.py
+----> python script created for adding rowid and random persentage : uniqerow.py
 
-in lambda/
+
+dont forget to install these in lambda/ folder
 npm init -y
 npm install aws-sdk
-npm install @aws-sdk/client-s3 @aws-sdk/client-dynamodb xlsx
+pip install boto3
+
 
 
 Frontend Depndencies (by order)
