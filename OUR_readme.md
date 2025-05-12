@@ -6,6 +6,10 @@ Dev#2
 ----> Python script to delete all the data is created as well
 ----> The endpoint to retrieve from the table is also created
 
+Dev#3
+
+in lambda/
+npm install @aws-sdk/client-s3 @aws-sdk/client-dynamodb xlsx
 
 
 Frontend Depndencies (by order)

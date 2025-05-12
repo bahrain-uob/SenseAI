@@ -138,14 +138,14 @@ exports.handler = async (event) => {
       const chunks = [];
 
       for (let i = 0; i < data.length; i += BATCH_SIZE) {
-        const batch = data.slice(i, i + BATCH_SIZE).filter(row => row.INDEX);
+        const batch = data.slice(i, i + BATCH_SIZE).filter(row => row.rowid);
         if (batch.length === 0) continue;
 
         const putRequests = batch.map(row => ({
           PutRequest: {
             Item: {
               ...row,
-              INDEX: row.INDEX.toString()
+              rowid: row.rowid.toString()
             }
           }
         }));
