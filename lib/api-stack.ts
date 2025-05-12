@@ -273,9 +273,41 @@ export class APIStack extends cdk.Stack {
           allowMethods: ["GET", "OPTIONS"],
         });
 
+      // Lambda function for RawTrans
+      const getFromTransRawLambda = new lambda.Function(this, 'GetFromTransRawLambda', {
+        runtime: lambda.Runtime.NODEJS_18_X,
+        handler: 'getFromTransRaw.handler',
+        code: lambda.Code.fromAsset('lambda'),
+        environment: {
+          TABLE_NAME: dbStack.TransRawTable.tableName,
+        },
+      });
 
-        
-        
+      // Grant Lambda read access to table
+      dbStack.TransRawTable.grantReadData(getFromTransRawLambda);
+      
+      // API Gateway resource
+        const rawtrans = api.root.addResource("RawTransaction");
+        rawtrans.addMethod("GET", new apigateway.LambdaIntegration(getFromTransRawLambda), {
+          authorizationType: apigateway.AuthorizationType.NONE,
+          methodResponses: [
+            {
+              statusCode: "200",
+              responseParameters: {
+                "method.response.header.Access-Control-Allow-Origin": true,
+                "method.response.header.Access-Control-Allow-Headers": true,
+                "method.response.header.Access-Control-Allow-Methods": true,
+              },
+            },
+          ],
+        });
+
+        rawtrans.addCorsPreflight({
+          allowOrigins: ["http://localhost:3000"],
+          allowMethods: ["GET", "OPTIONS"],
+        });
+
+                    
         
     
 

@@ -14,7 +14,7 @@ const app = new cdk.App();
 const dbStack = new DBStack(app, "DBStack", {
   // Any custom stack props you may have for DBStack
 });
-const MyCdkAppStack = new MyCdkStack(app, "MyCdkAppStack",dbStack.rawTransTable);
+const MyCdkAppStack = new MyCdkStack(app, "MyCdkAppStack",dbStack.TransRawTable);
 
 // Create the APIStack, passing in the DBStack as a dependency
 const apistack= new APIStack(app, "APIStack", dbStack, MyCdkAppStack.TransactionUploadsBucket,MyCdkAppStack.uploadobjBucket); 
