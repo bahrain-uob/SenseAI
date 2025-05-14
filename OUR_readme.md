@@ -6,7 +6,7 @@ Dev#2
 ----> Python script to delete all the data is created as well
 ----> The endpoint to retrieve from the table is also created
 
-Dev#3-Parse
+Dev#3-Parse 
 ---->RawTrans table is created with primary key = rowid
 ----> created lambda that convert excel to a dynamoDB records
  (when file uploaded it will be inserted in RawTrans table in dynamo)
