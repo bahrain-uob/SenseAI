@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { MyCdkStack } from "../lib/my-cdk-app-stack";
 import { DBStack } from "../lib/DBstack"; // Import your DBStack
 import { APIStack } from "../lib/api-stack"; // Import your APIStack
+import { CdkBedrockChatbotStack } from "../lib/cdk-bedrock-chatbot-stack";
 import { SagemakerStack } from "../lib/sagemaker-stack";
 import { ReplaceStack } from "../lib/replace-stack";
 import { AnomalyStack } from '../lib/anomaly-stack';
@@ -17,6 +18,13 @@ const MyCdkAppStack = new MyCdkStack(app, "MyCdkAppStack");
 // Create the APIStack, passing in the DBStack as a dependency
 new APIStack(app, "APIStack", dbStack, MyCdkAppStack.TransactionUploadsBucket,MyCdkAppStack.uploadobjBucket); // Pass the DBStack as the second argument
 
+
+new CdkBedrockChatbotStack(app, 'CdkBedrockChatbotStack', {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: 'eu-west-1', // 👈 Set region to Ireland explicitly
+  },
+});
 /* // Optionally, you can create your other stacks here if needed
 new MyCdkStack(app, "MyCdkAppStack");
 
