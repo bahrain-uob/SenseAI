@@ -115,65 +115,66 @@ exports.handler = async (event) => {
     return;
   }
 
+  // grab both env vars
+  const table1 = process.env.RAW_TABLE;
+  const table2 = process.env.RAW_V2_TABLE;
+
   for (const record of event.Records) {
     const bucket = record.s3.bucket.name;
-    const key = decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '));
+    const key    = decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '));
 
     console.log(`📥 Processing file: ${key} from bucket: ${bucket}`);
 
     try {
       const s3Object = await S3.getObject({ Bucket: bucket, Key: key }).promise();
-      console.log(`📦 Fetched object from S3. Size: ${s3Object.ContentLength} bytes`);
+      console.log(`📦 Fetched object. Size: ${s3Object.ContentLength} bytes`);
 
-      const workbook = xlsx.read(s3Object.Body, { type: 'buffer' });
-      console.log(`📄 Parsed Excel file. Sheets available: ${workbook.SheetNames}`);
-
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const data = xlsx.utils.sheet_to_json(sheet);
+      const wb = xlsx.read(s3Object.Body, { type: 'buffer' });
+      const sheetName = wb.SheetNames[0];
+      const data      = xlsx.utils.sheet_to_json(wb.Sheets[sheetName]);
       console.log(`📊 Extracted ${data.length} rows from sheet: ${sheetName}`);
 
-      const tableName = process.env.TABLE_NAME;
+      // break into batches of 25
       const BATCH_SIZE = 25;
-      const chunks = [];
-
+      const batches = [];
       for (let i = 0; i < data.length; i += BATCH_SIZE) {
-        const batch = data.slice(i, i + BATCH_SIZE).filter(row => row.rowid);
-        if (batch.length === 0) continue;
-
-        const putRequests = batch.map(row => ({
-          PutRequest: {
-            Item: {
-              ...row,
-              rowid: row.rowid.toString()
+        const slice = data
+          .slice(i, i + BATCH_SIZE)
+          .filter(r => r.rowid)
+          .map(r => ({
+            PutRequest: {
+              Item: {
+                ...r,
+                rowid: r.rowid.toString()
+              }
             }
-          }
-        }));
-
-        chunks.push({ RequestItems: { [tableName]: putRequests } });
+          }));
+        if (slice.length) batches.push(slice);
       }
 
       let totalInserted = 0;
-
-      for (const chunk of chunks) {
-        try {
-          const result = await DynamoDB.batchWrite(chunk).promise();
-          const unprocessed = result.UnprocessedItems?.[tableName]?.length || 0;
-          const processed = chunk.RequestItems[tableName].length - unprocessed;
-
-          totalInserted += processed;
-
-          if (unprocessed > 0) {
-            console.warn(`⚠️ ${unprocessed} unprocessed items in this batch.`);
+      // write each batch to each table
+      for (const batch of batches) {
+        for (const tbl of [table1, table2]) {
+          const params = { RequestItems: { [tbl]: batch } };
+          try {
+            const res = await DynamoDB.batchWrite(params).promise();
+            const unprocessed = res.UnprocessedItems?.[tbl]?.length || 0;
+            const processed = batch.length - unprocessed;
+            totalInserted += processed;
+            if (unprocessed) {
+              console.warn(`⚠️ ${unprocessed} unprocessed in ${tbl}`);
+            }
+          } catch (err) {
+            console.error(`❌ Error writing to ${tbl}:`, err);
           }
-        } catch (err) {
-          console.error("❌ Error writing batch to DynamoDB:", err);
         }
       }
 
-      console.log(`✅ Batch insert completed. Total rows inserted: ${totalInserted}`);
-    } catch (error) {
-      console.error(`❌ Error processing file ${key}:`, error);
+      console.log(`✅ All done. Total rows inserted across both tables: ${totalInserted}`);
+    } catch (err) {
+      console.error(`❌ Error processing ${key}:`, err);
     }
   }
 };
+

@@ -6,6 +6,7 @@ export class DBStack extends cdk.Stack {
   public readonly casesTable: dynamodb.Table;
   public readonly activityTable: dynamodb.Table;
   public readonly TransRawTable : dynamodb.Table;
+  public readonly TransRawTable2 : dynamodb.Table;
 
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -27,6 +28,17 @@ export class DBStack extends cdk.Stack {
 
     this.TransRawTable = new dynamodb.Table(this, 'TransRaw', {
       tableName: 'TransRaw',
+      partitionKey: {
+        name: 'rowid',
+        type: dynamodb.AttributeType.STRING,
+      },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // change to RETAIN for production
+    });
+
+    //table for audit page v2
+    this.TransRawTable2 = new dynamodb.Table(this, 'TransRawV2', {
+      tableName: 'TransRawV2',
       partitionKey: {
         name: 'rowid',
         type: dynamodb.AttributeType.STRING,

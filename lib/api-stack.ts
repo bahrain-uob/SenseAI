@@ -59,6 +59,7 @@ export class APIStack extends cdk.Stack {
         CASES_TABLE_NAME: dbStack.casesTable.tableName,
       },
     });
+    
 
     // Lambda function for Hello World
     const helloLambda = new lambda.Function(this, "HelloLambda", {
@@ -121,9 +122,9 @@ export class APIStack extends cdk.Stack {
     dbStack.casesTable.grantReadWriteData(insertCaseLambda);
     dbStack.casesTable.grantReadData(getCasesLambda);
     dbStack.casesTable.grantReadWriteData(insertSampleCaseLambda);
+  
 
     
-
     // Create the API Gateway
     const api = new apigateway.RestApi(this, "[SenseAI]Api", {
       restApiName: " SensAI Service",
@@ -279,12 +280,12 @@ export class APIStack extends cdk.Stack {
         handler: 'getFromTransRaw.handler',
         code: lambda.Code.fromAsset('lambda'),
         environment: {
-          TABLE_NAME: dbStack.TransRawTable.tableName,
+          TABLE_NAME: dbStack.TransRawTable2.tableName,
         },
       });
 
       // Grant Lambda read access to table
-      dbStack.TransRawTable.grantReadData(getFromTransRawLambda);
+      dbStack.TransRawTable2.grantReadData(getFromTransRawLambda);
       
       // API Gateway resource
         const rawtrans = api.root.addResource("RawTransaction");
@@ -301,10 +302,23 @@ export class APIStack extends cdk.Stack {
             },
           ],
         });
+        rawtrans.addMethod("POST", new apigateway.LambdaIntegration(getFromTransRawLambda), {
+  authorizationType: apigateway.AuthorizationType.NONE,
+  methodResponses: [
+    {
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": true,
+        "method.response.header.Access-Control-Allow-Headers": true,
+        "method.response.header.Access-Control-Allow-Methods": true,
+      },
+    },
+  ],
+});
 
         rawtrans.addCorsPreflight({
           allowOrigins: ["http://localhost:3000"],
-          allowMethods: ["GET", "OPTIONS"],
+          allowMethods: ["GET", "OPTIONS","OPTIONS"],
         });
 
                     
