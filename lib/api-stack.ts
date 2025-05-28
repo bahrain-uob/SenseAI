@@ -181,7 +181,7 @@ export class APIStack extends cdk.Stack {
           handler: "chatbedrock.handler", // Path: lambda/chatbedrock.py
           code: lambda.Code.fromAsset("lambda"),
           environment: {
-            KNOWLEDGE_BASE_ID: "FAIIYRNX5D",  // ← Replace this
+            KNOWLEDGE_BASE_ID: "FAIIYRNX5D",
           },
         });
         chatBedrockLambda.addToRolePolicy(new iam.PolicyStatement({
