@@ -205,6 +205,7 @@ export class APIStack extends cdk.Stack {
         const chatBedrockLambda = new lambda.Function(this, "ChatBedrockLambda", {
           runtime: lambda.Runtime.PYTHON_3_11,
           handler: "chatbedrock.lambda_handler", 
+        
           code: lambda.Code.fromAsset("lambda"),     
           environment: {
             KNOWLEDGE_BASE_ID: "FAIIYRNX5D",
