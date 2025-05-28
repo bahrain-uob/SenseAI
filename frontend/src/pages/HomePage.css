@@ -155,12 +155,16 @@ html, body {
       transform: translateY(0);
     }
     50% {
-      transform: translateY(-6px);
+      transform: translateY(-4px);
     }
   }
   .chatbot-button {
-    animation: bounce 1.5s ease-in-out infinite;
+    animation: bounce 2.5s ease-out infinite;
+    transform: translateY(0); /* ensures initial state */
+    transition: transform 0.2s ease; /* smoother hover */
+    will-change: transform; /* hint browser for animation */
   }
+  
 
 
   
