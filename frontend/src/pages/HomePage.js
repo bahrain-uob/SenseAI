@@ -1,5 +1,6 @@
 import React, { useState,useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import {
   FaHome, FaUpload, FaChartBar, FaChartLine,
   FaRobot, FaUser, FaAngleUp, FaAngleDown,FaSignOutAlt,
@@ -14,23 +15,72 @@ import i18n from 'i18next';
 const HomePage = ({ children }) => {
   
   const [chatOpen, setChatOpen] = useState(false);
+  const [miniChatMessages, setMiniChatMessages] = useState([
+    { text: "Hello! How can I help you today?", sender: "bot" }
+  ]);
+  const [miniInput, setMiniInput] = useState('');
+  const [miniTyping, setMiniTyping] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      setShowLanguageDropdown(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    const saved = localStorage.getItem("chat-mini-history");
+    if (saved) {
+      setMiniChatMessages(JSON.parse(saved));
+    }
+  }, []);
+  
+  // Save history every time it changes
+  useEffect(() => {
+    localStorage.setItem("chat-mini-history", JSON.stringify(miniChatMessages));
+  }, [miniChatMessages]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowLanguageDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleMiniSend = async () => {
+    const input = miniInput.trim();
+    if (!input) return;
+
+    const updated = [...miniChatMessages, { text: input, sender: 'user' }];
+    setMiniChatMessages(updated);
+    setMiniTyping(true);
+    setMiniInput('');
+
+    try {
+      const res = await fetch('https://xu9hwa7e40.execute-api.eu-west-1.amazonaws.com/prod/chatbedrock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: input })
+      });
+
+      const data = await res.json();
+      const reply = data.answer || "I'm sorry, I couldn't understand that.";
+
+      setMiniChatMessages([...updated, { text: reply, sender: 'bot' }]);
+    } catch (err) {
+      console.error("MiniBot API Error:", err);
+      setMiniChatMessages([...updated, {
+        text: "Error: Unable to reach the assistant.",
+        sender: 'bot'
+      }]);
+    } finally {
+      setMiniTyping(false);
     }
   };
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
-
-  const navigate = useNavigate();
-  const { t } = useTranslation();
  
   return (
     <div style={styles.wrapper}>
@@ -154,24 +204,72 @@ useEffect(() => {
 
       {/* Floating Chatbot Button */}
       <div
-        style={styles.chatbotButton}
-        className="chatbot-button"
-        onClick={() => setChatOpen(!chatOpen)}
-      >
-        <FaRobot style={{ marginRight: '6px' }} />
-       {t('customsBot')}
-        <span style={{ marginLeft: '4px' }}>{chatOpen ? <FaAngleDown/> : <FaAngleUp/>}</span>
-      </div>
+  className="chatbot-button"
+  onClick={() => setChatOpen(!chatOpen)}
+>
+  <FaRobot style={{ marginRight: '6px' }} />
+  {t('customsBot')}
+  <span style={{ marginLeft: '4px' }}>
+    {chatOpen ? <FaAngleDown /> : <FaAngleUp />}
+  </span>
+</div>
 
-      {chatOpen && (
-        <div style={styles.chatPanel}>
-          <div style={styles.chatHeader}>{t('customsBot')}</div>
-          <div style={styles.chatMessages}>
-            <p><strong>Bot:</strong> Hello! How can I help you today?</p>
-          </div>
-          <div style={styles.chatInputArea}>
-            <input type="text" placeholder={t('messege')} style={styles.chatInput} />
-            <button style={styles.chatSend}>{t('send')}</button>
+{chatOpen && (
+  <div className="chat-panel">
+
+    <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '6px 10px' }}>
+  <button
+    onClick={() => {
+      const fresh = [{ text: 'Hello! How can I help you today?', sender: 'bot' }];
+      setMiniChatMessages(fresh);
+      localStorage.setItem("chat-mini-history", JSON.stringify(fresh));
+    }}
+    style={{
+      backgroundColor: '#eee',
+      border: 'none',
+      borderRadius: '12px',
+      padding: '4px 10px',
+      cursor: 'pointer',
+      fontSize: '12px',
+      fontWeight: 'bold'
+    }}
+  >
+    + New Chat
+  </button>
+</div>
+
+    <div className="chat-header">{t('customsBot')}</div>
+
+    <div className="chat-messages">
+      {miniChatMessages.map((msg, idx) => (
+        <div
+          key={idx}
+          className={`message-bubble ${msg.sender === 'bot' ? 'bot-message' : 'user-message'}`}
+        >
+          {msg.text}
+        </div>
+      ))}
+      {miniTyping && (
+        <div className="message-bubble bot-message">
+          <span className="dot"></span>
+          <span className="dot"></span>
+          <span className="dot"></span>
+        </div>
+      )}
+    </div>
+
+    <div className="chat-input-area">
+      <input
+        type="text"
+        placeholder={t('messege')}
+        className="chat-input"
+        value={miniInput}
+        onChange={(e) => setMiniInput(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleMiniSend()}
+      />
+      <button className="chat-send" onClick={handleMiniSend}>
+        {t('send')}
+      </button>
           </div>
         </div>
       )}
@@ -265,66 +363,6 @@ const styles = {
     position: 'relative',
     marginTop: 'auto',
   },
-  chatbotButton: {
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px',
-    backgroundColor: '#c7a349',
-    color: 'white',
-    borderRadius: '8px',
-    padding: '8px 12px',
-    display: 'flex',
-    alignItems: 'center',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-    zIndex: 100,
-  },
-  chatPanel: {
-    position: 'fixed',
-    bottom: '80px',
-    right: '20px',
-    width: '300px',
-    backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    zIndex: 200,
-  },
-  chatHeader: {
-    backgroundColor: '#0b1543',
-    color: '#fff',
-    padding: '12px',
-    fontWeight: 'bold',
-    fontSize: '16px',
-  },
-  chatMessages: {
-    padding: '12px',
-    height: '200px',
-    overflowY: 'auto',
-    fontSize: '14px',
-  },
-  chatInputArea: {
-    display: 'flex',
-    borderTop: '1px solid #ccc',
-  },
-  chatInput: {
-    flex: 1,
-    border: 'none',
-    padding: '10px',
-    fontSize: '14px',
-    outline: 'none',
-  },
-  chatSend: {
-    backgroundColor: '#c7a349',
-    border: 'none',
-    color: 'white',
-    padding: '0 16px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-  },
   languageSwitch: {
     display: 'flex',
     alignItems: 'center',
@@ -404,4 +442,6 @@ const styles = {
 };
 
 export default HomePage;
+
+
 

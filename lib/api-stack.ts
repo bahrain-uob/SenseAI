@@ -208,6 +208,7 @@ export class APIStack extends cdk.Stack {
           code: lambda.Code.fromAsset("lambda"),     
           environment: {
             KNOWLEDGE_BASE_ID: "FAIIYRNX5D",
+  
             MODEL_ARN: "arn:aws:bedrock:eu-west-1::foundation-model/mistral.mixtral-8x7b-instruct-v0:1"
           },
           timeout: cdk.Duration.seconds(30)
