@@ -1,33 +1,40 @@
 import React, { useState, useEffect } from "react";
 import "./TransactionDetail.css";
-import { FaBoxOpen, FaGlobe, FaMoneyBill, FaBalanceScale, FaChartLine, FaFileAlt, FaFlag, FaTrash ,FaLock} from "react-icons/fa";
+import {
+  FaBoxOpen, FaGlobe, FaMoneyBill, FaBalanceScale,
+  FaChartLine, FaFileAlt, FaFlag, FaTrash, FaLock, FaClock
+} from "react-icons/fa";
 import axios from "axios";
 
 const TransactionDetail = () => {
   const [comment, setComment] = useState("");
   const [commentList, setCommentList] = useState([]);
-  const [activeAction, setActiveAction] = useState(null);
-  const [showAllActions, setShowAllActions] = useState(true);
+  const [selectedAction, setSelectedAction] = useState("");
+  const [showFlagMenu, setShowFlagMenu] = useState(false);
+  const [showFlagDetails, setShowFlagDetails] = useState(false);
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedExplanation, setSelectedExplanation] = useState("");
+  const [selectedFlager, setSelectedFlager] = useState("");
+  const [showNotFlaggedComment, setShowNotFlaggedComment] = useState(false);
+  const [notFlaggedReason, setNotFlaggedReason] = useState("");
 
   const userName = "Ahmed"; // Replace with logged-in user
-  const trxId = "TRX-2025000"; // Replace with your transaction ID from router/URL if needed
-  const [showFlagMenu, setShowFlagMenu] = useState(false);
-  const [showCloseMenu, setShowCloseMenu] = useState(false);
-  const [selectedAction, setSelectedAction] = useState("");
-     // Replace with actual logged-in user
+  const trxId = "TRX-2025000"; // Replace with your transaction ID
 
-  const arabicActions = [
-    "تعديل البيان",
-    "تحويل الى الشؤون القانونية",
-    "إجراءات أخرى",
-  ];
+  const arabicActions = ["تعديل البيان", "تحويل الى الشؤون القانونية"];
+  const errorTypes = ["السجل التجاري", "بند التعرفة", "أخطاء إحصائية", "مستندات ناقصة", "رسوم جمركية", "القيمة الجمركية"];
+  const errorExplanations = ["ميناء الشحن", "قيمة البضاعة الجمركية", "تخفيض/خصم", "أجور الشحن", "وصف البضاعة", "منشأ البضاعة", "(سيل)ختم الجمارك", "الوزن", "CBM", "FOC", "العملة", "تصنيف البضاعة", "بطاقات المرور", "الفاتورة", "العدد", "رسوم شهادة المنشأ", "مبلغ التأمين غير مطابق", "رسوم الأشعة"];
+  const flagers = ["شركة التخليص", "المستورد"];
 
-  const logAction = async (action) => {
+  const logAction = async (action, type = "", explanation = "", flager = "") => {
     try {
       await axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities", {
         TransactionID: trxId,
         EmployeeName: userName,
         Action: action,
+        TypeOfError: type,
+        ErrorExplanation: explanation,
+        Flager: flager,
         Timestamp: new Date().toISOString(),
       });
       console.log("Logged action:", action);
@@ -37,27 +44,36 @@ const TransactionDetail = () => {
   };
 
   const handleFlagSelect = (action) => {
-    const logText = `Flag: ${action}`;
-    setSelectedAction(logText);
+    setSelectedAction(action);
     setShowFlagMenu(false);
-    logAction(logText);
+    setShowFlagDetails(true);
+  };
+
+  const handleSubmitFlag = () => {
+    const logText = `مخالف: ${selectedAction}`;
+    logAction(logText, selectedType, selectedExplanation, selectedFlager);
+    setShowFlagDetails(false);
+    setSelectedAction(logText);
+    setSelectedType("");
+    setSelectedExplanation("");
+    setSelectedFlager("");
   };
 
   const handleCloseCase = () => {
-    const logText = "Close Case";
+    const logText = "إغلاق تدقيق المعاملة";
+    setSelectedAction(logText);
+    logAction(logText);
+    setShowNotFlaggedComment(false);
+    setNotFlaggedReason("");
+  };
+
+  const handlePending = () => {
+    const logText = "قيد التدقيق";
     setSelectedAction(logText);
     logAction(logText);
   };
 
   useEffect(() => {
-    // Restore status from localStorage
-    const savedStatus = localStorage.getItem("transactionStatus");
-    if (savedStatus) {
-      setActiveAction(savedStatus);
-      setShowAllActions(false);
-    }
-
-    // Log "view" to the activities endpoint
     axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities", {
       TransactionID: trxId,
       Action: "Open",
@@ -65,17 +81,6 @@ const TransactionDetail = () => {
       Timestamp: new Date().toISOString()
     }).catch(console.error);
   }, []);
-
-  const handleAction = (action) => {
-    setActiveAction(action);
-    setShowAllActions(false);
-    localStorage.setItem("transactionStatus", action);
-  };
-
-  const resetAction = () => {
-    setShowAllActions(true);
-    localStorage.removeItem("transactionStatus");
-  };
 
   const handleCommentSubmit = () => {
     if (comment.trim()) {
@@ -103,27 +108,7 @@ const TransactionDetail = () => {
     localAmount: "15000",
     vatRate: "5%",
     vatBHD: "750",
-    fees: "300",
-    grossWeight: "21263",
-    netWeight: "21263",
-    amtNetWeight: "4.25",
-    netPerPackage: "3.00",
-    netPerSup: "1.41",
-    amtPerPackage: "2.00",
-    amtPerSup: "1.00",
-    supAmt: "5",
-    maxAmo: "21.263",
-    aveAmo: "15.000",
-    minAmo: "5.000",
-    mainMax: "HIGH",
-    mainMin: "LOW",
-    regSerial: "29229",
-    regNumber: "4",
-    regDate: "2025-04-22",
-    declarantCR: "DEC29229",
-    declarantName: "Ali Saleh",
-    consigneeCR: "CON1198",
-    consigneeName: "Customs Bahrain",
+    fees: "300"
   };
 
   const Section = ({ title, rows, icon }) => (
@@ -139,121 +124,101 @@ const TransactionDetail = () => {
     </div>
   );
 
-  if (!data) {
-    return (
-      <div className="report-container">
-        <h2 className="report-title">Transaction Details</h2>
-        <p style={{ textAlign: "center", marginTop: "2rem" }}>Loading or not found...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="report-container">
-      <h2 className="report-title">Transaction Details</h2>
+      <h2 className="report-title">تفاصيل المعاملة</h2>
 
-     
       <div className="transaction-actions">
-      <span className="status-label">الإجراء المتخذ:</span>
+        <span className="status-label">الإجراء المتخذ:</span>
+        <div className="flag-container">
+          <button className="action-btn flag" onClick={() => setShowFlagMenu(prev => !prev)}>
+            <FaFlag /> مخالف
+          </button>
+          {showFlagMenu && (
+            <ul className="flag-dropdown">
+              {arabicActions.map((action, idx) => (
+                <li key={idx} onClick={() => handleFlagSelect(action)}>{action}</li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-      {/* 🔥 Flag button and dropdown */}
-      <div className="flag-container">
-        <button className="action-btn flag" onClick={() => setShowFlagMenu(prev => !prev)}>
-          <FaFlag /> Flag
+        <button className="action-btn not-flagged" onClick={() => setShowNotFlaggedComment(true)}>
+          غير مخالف
         </button>
-        {showFlagMenu && (
-          <ul className="flag-dropdown">
-            {arabicActions.map((action, idx) => (
-              <li key={idx} onClick={() => handleFlagSelect(action)}>
-                {action}
-              </li>
-            ))}
-          </ul>
+
+        <button className="action-btn pending" onClick={handlePending}>
+          <FaClock /> قيد التدقيق
+        </button>
+
+        {showNotFlaggedComment && (
+          <div className="not-flagged-comment">
+            <textarea
+              value={notFlaggedReason}
+              onChange={(e) => setNotFlaggedReason(e.target.value)}
+              placeholder="اكتب سبب عدم المخالفة..."
+            ></textarea>
+            <button className="submit-log" onClick={() => {
+              logAction(`غير مخالف: ${notFlaggedReason}`);
+              setShowNotFlaggedComment(false);
+              setNotFlaggedReason("");
+              setSelectedAction(`غير مخالف: ${notFlaggedReason}`);
+            }}>
+              تسجيل وإغلاق المعاملة
+            </button>
+          </div>
+        )}
+
+        {selectedAction && (
+          <div className="selected-action">
+            الإجراء المختار: {selectedAction}
+          </div>
         )}
       </div>
 
-      {/* 🔒 Close Case button */}
-      <button className="action-btn close" onClick={handleCloseCase}>
-        <FaLock /> Close Case
-      </button>
-
-      {/* 🔥 Show selected action */}
-      {selectedAction && (
-        <div className="selected-action">
-          الإجراء المختار: {selectedAction}
+      {showFlagDetails && (
+        <div className="flag-details">
+          <label>نوع الخطأ:</label>
+          <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>
+            <option value="">اختر</option>
+            {errorTypes.map((type, idx) => (
+              <option key={idx} value={type}>{type}</option>
+            ))}
+          </select>
+          <label>شرح الخطأ:</label>
+          <select value={selectedExplanation} onChange={(e) => setSelectedExplanation(e.target.value)}>
+            <option value="">اختر</option>
+            {errorExplanations.map((exp, idx) => (
+              <option key={idx} value={exp}>{exp}</option>
+            ))}
+          </select>
+          <label>المخالف:</label>
+          <select value={selectedFlager} onChange={(e) => setSelectedFlager(e.target.value)}>
+            <option value="">اختر</option>
+            {flagers.map((f, idx) => (
+              <option key={idx} value={f}>{f}</option>
+            ))}
+          </select>
+          <button className="submit-log" onClick={handleSubmitFlag}>تسجيل المخالفة</button>
         </div>
       )}
-    </div>
-
 
       <div className="row-group">
         <Section title="Product & HS Code" icon={<FaBoxOpen />} rows={[
-          ["HS Code", data.hsCode],
-          ["Description", data.description],
-          ["Regime", data.regime],
-          ["HS Rate", data.hsRate],
-          ["Commercial Description", data.commercialDesc],
-          ["Package Code", data.packageCode],
-          ["Supplementary Unit", data.supUnit],
+          ["HS Code", data.hsCode], ["Description", data.description], ["Regime", data.regime], ["HS Rate", data.hsRate], ["Commercial Description", data.commercialDesc], ["Package Code", data.packageCode], ["Supplementary Unit", data.supUnit]
         ]} />
-
         <Section title="Origin & Export Details" icon={<FaGlobe />} rows={[
-          ["Country of Origin", data.country],
-          ["Exporter CR", data.exporterCR],
-          ["Exporter Name", data.exporterName],
+          ["Country of Origin", data.country], ["Exporter CR", data.exporterCR], ["Exporter Name", data.exporterName]
         ]} />
-
         <Section title="Invoice & Value Details" icon={<FaMoneyBill />} rows={[
-          ["Invoice Currency", data.currency],
-          ["Local Amount", data.localAmount],
-          ["VAT Rate", data.vatRate],
-          ["VAT BHD", data.vatBHD],
-          ["Fees", data.fees],
-        ]} />
-      </div>
-
-      <div className="row-group">
-        <Section title="Weight & Measurement" icon={<FaBalanceScale />} rows={[
-          ["Gross Weight", data.grossWeight],
-          ["Net Weight", data.netWeight],
-          ["Amount / Net Weight", data.amtNetWeight],
-          ["Net Weight / Package", data.netPerPackage],
-          ["Net Weight / Sup", data.netPerSup],
-          ["Amount / Package", data.amtPerPackage],
-          ["Amount / Sup", data.amtPerSup],
-          ["Sup Amt", data.supAmt],
-        ]} />
-
-        <Section title="Pricing Analysis" icon={<FaChartLine />} rows={[
-          ["Max Amount", data.maxAmo],
-          ["Average Amount", data.aveAmo],
-          ["Min Amount", data.minAmo],
-          ["Main Max", data.mainMax],
-          ["Main Min", data.mainMin],
-        ]} />
-
-        <Section title="Declaration & Parties" icon={<FaFileAlt />} rows={[
-          ["Registration Serial", data.regSerial],
-          ["Registration Number", data.regNumber],
-          ["Registration Date", data.regDate],
-          ["Declarant CR", data.declarantCR],
-          ["Declarant Name", data.declarantName],
-          ["Consignee CR", data.consigneeCR],
-          ["Consignee Name", data.consigneeName],
+          ["Invoice Currency", data.currency], ["Local Amount", data.localAmount], ["VAT Rate", data.vatRate], ["VAT BHD", data.vatBHD], ["Fees", data.fees]
         ]} />
       </div>
 
       <div className="comment-section">
         <h3>Leave a Comment</h3>
-        <textarea
-          placeholder="Write your comment here..."
-          rows={4}
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          className="comment-input"
-        />
+        <textarea placeholder="Write your comment here..." rows={4} value={comment} onChange={(e) => setComment(e.target.value)} className="comment-input" />
         <button className="submit-comment" onClick={handleCommentSubmit}>Submit Comment</button>
-
         {commentList.length > 0 && (
           <div className="submitted-comments">
             <h4>Previous Comments</h4>
@@ -261,9 +226,7 @@ const TransactionDetail = () => {
               {commentList.map((c, i) => (
                 <li key={i}>
                   <span><strong>{c.user}:</strong> {c.text}</span>
-                  <button className="delete-comment" onClick={() => handleCommentDelete(i)}>
-                    <FaTrash />
-                  </button>
+                  <button className="delete-comment" onClick={() => handleCommentDelete(i)}><FaTrash /></button>
                 </li>
               ))}
             </ul>
@@ -275,4 +238,6 @@ const TransactionDetail = () => {
 };
 
 export default TransactionDetail;
+
+
 

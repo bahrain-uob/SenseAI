@@ -62,186 +62,6 @@
   padding: 4px;
 }
 
-/* Action Buttons Below Title */
-.transaction-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin: 20px 0;
-  flex-wrap: wrap;
-}
-
-.action-btn {
-  padding: 10px 18px;
-  font-weight: bold;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
-}
-
-.flag {
-  background-color: #ffd700; /* gold */
-  color: #0b1743;
-}
-
-.open {
-  background-color: #4caf50;
-  color: white;
-}
-
-.close {
-  background-color: #f44336;
-  color: white;
-}
-
-.action-btn:hover {
-  opacity: 0.85;
-}
-
-/* Comment Section */
-.comment-section {
-  background: white;
-  border: 1px solid #e5e7eb;
-  padding: 1.5rem;
-  border-radius: 6px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.04);
-  margin-top: 2rem;
-}
-
-.comment-section h3 {
-  font-size: 16px;
-  margin-bottom: 0.75rem;
-  font-weight: bold;
-  color: #0b1743;
-}
-
-.comment-input {
-  width: 100%;
-  min-height: 100px;
-  padding: 0.75rem;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  resize: vertical;
-  margin-bottom: 1rem;
-}
-
-.submit-comment {
-  background-color: #0b1743;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-.submit-comment:hover {
-  background-color: #1a2d66;
-}
-
-.transaction-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin: 20px 0;
-  flex-wrap: wrap;
-}
-
-.action-btn {
-  padding: 12px 22px;
-  font-weight: 600;
-  font-size: 15px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-}
-
-.flag {
-  background-color: #fdd835;
-  color: #0b1743;
-}
-
-.open {
-  background-color: #43a047;
-  color: white;
-}
-
-.close {
-  background-color: #e53935;
-  color: white;
-}
-
-.comment-section {
-  background: white;
-  border: 1px solid #e5e7eb;
-  padding: 1.5rem;
-  border-radius: 6px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.04);
-  margin-top: 2rem;
-}
-
-.comment-section h3 {
-  font-size: 16px;
-  margin-bottom: 0.75rem;
-  font-weight: bold;
-  color: #0b1743;
-}
-
-.comment-input {
-  width: 100%;
-  min-height: 100px;
-  padding: 12px 16px; /* ✅ More padding all around */
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  resize: vertical;
-  margin-bottom: 1rem;
-  box-sizing: border-box; /* ✅ ensures padding doesn't overflow */
-}
-
-
-.submit-comment {
-  background-color: #0b1743;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-.submit-comment:hover {
-  background-color: #1a2d66;
-}
-
-.submitted-comments {
-  margin-top: 1rem;
-}
-
-.submitted-comments h4 {
-  margin-bottom: 0.5rem;
-  font-size: 15px;
-  color: #0b1743;
-}
-
 .transaction-actions {
   display: flex;
   align-items: center;
@@ -272,38 +92,101 @@
 }
 
 .action-btn.flag {
-  background-color: #fdd835;
-  color: #0b1743;
+  background-color: red;
+  color: #fff;
 }
 
-.action-btn.open {
-  background-color: #43a047;
+.action-btn.pending {
+  background-color: #ffa500;
   color: white;
 }
 
 .action-btn.close {
-  background-color: #e53935;
+  background-color: #333;
   color: white;
 }
 
-.change-status-btn {
-  padding: 8px 14px;
-  background-color: transparent;
-  border: 1px solid #0b1743;
-  color: #0b1743;
-  font-weight: bold;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: 0.3s ease;
+.action-btn:hover {
+  opacity: 0.85;
 }
 
-.change-status-btn:hover {
+.flag-container {
+  position: relative;
+}
+
+.flag-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  list-style: none;
+  padding: 0;
+  margin-top: 0.25rem;
+  width: 180px;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.flag-dropdown li {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.flag-dropdown li:hover {
+  background-color: #f0f0f0;
+}
+
+.selected-action {
+  font-weight: bold;
+  color: #333;
+  margin-top: 10px;
+}
+
+.flag-details {
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  margin-top: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.flag-details label {
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+  display: block;
+  color: #0b1743;
+}
+
+.flag-details select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  min-width: 180px;
+}
+
+.submit-log {
   background-color: #0b1743;
   color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
 }
 
-/* Comment UI */
+.submit-log:hover {
+  background-color: #1a2d66;
+}
+
+/* Comment Section */
 .comment-section {
   background: white;
   border: 1px solid #e5e7eb;
@@ -311,6 +194,13 @@
   border-radius: 6px;
   box-shadow: 0 0 5px rgba(0,0,0,0.04);
   margin-top: 2rem;
+}
+
+.comment-section h3 {
+  font-size: 16px;
+  margin-bottom: 0.75rem;
+  font-weight: bold;
+  color: #0b1743;
 }
 
 .comment-input {
@@ -363,48 +253,152 @@
   font-size: 14px;
 }
 .transaction-actions {
-  position: relative;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin: 20px 0;
+  direction: rtl; /* Arabic Right-to-Left */
 }
 
-.flag-container {
-  position: relative;
-}
-
-.flag-dropdown {
-  position: absolute;
-  top: 100%;  /* Below the Flag button */
-  left: 0;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  list-style: none;
-  padding: 0;
-  margin-top: 0.25rem;
-  width: 180px;
-  z-index: 10;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-}
-
-.flag-dropdown li {
-  padding: 0.5rem;
-  cursor: pointer;
-}
-
-.flag-dropdown li:hover {
-  background-color: #f0f0f0;
-}
-
-.selected-action {
+.action-btn {
+  padding: 12px 24px;
   font-weight: bold;
-  color: #333;
+  font-size: 14px;
+  border-radius: 12px; /* More rounded */
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
 }
-.action-btn.close {
-  background-color: #333;  /* optional dark styling */
+
+.action-btn.flag {
+  background-color: #ff3b30;
   color: white;
 }
 
+.action-btn.pending {
+  background-color: #ff9500;
+  color: white;
+}
 
+.action-btn.close {
+  background-color: #333;
+  color: white;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+  opacity: 0.9;
+}
+
+.status-label {
+  font-weight: bold;
+  color: #0b1743;
+  margin-left: 8px;
+  font-size: 16px;
+}
+
+.flag-details {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  direction: rtl;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.flag-details select, .flag-details button {
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+}
+
+.submit-log {
+  background-color: #0b1743;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.submit-log:hover {
+  background-color: #1a2d66;
+}
+.transaction-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 20px 0;
+  direction: rtl;
+}
+
+.action-btn {
+  padding: 12px 20px;
+  font-weight: bold;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+.action-btn.flag { background-color: #f44336; color: white; }
+.action-btn.pending { background-color: #ff9800; color: white; }
+.action-btn.not-flagged { background-color: #4caf50; color: white; }
+.action-btn.close { background-color: #333; color: white; }
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+}
+
+.not-flagged-comment {
+  background: #f9f9f9;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-top: 1rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: right;
+}
+
+.not-flagged-comment textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-bottom: 0.5rem;
+}
+
+.submit-log {
+  background-color: #0b1743;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.error-msg {
+  color: red;
+  font-size: 13px;
+  margin-bottom: 0.5rem;
+}
