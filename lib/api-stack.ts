@@ -248,41 +248,69 @@ export class APIStack extends cdk.Stack {
           allowHeaders: ["Content-Type"]
         });
 
-        
-//Employee activities integration        
-        // Lambda to retrieve employee activity logs
-        const getEmployeeActivitiesLambda = new lambda.Function(this, "GetEmployeeActivitiesLambda", {
-          runtime: lambda.Runtime.PYTHON_3_11,
-          handler: "getEmployeeActivities.handler",
-          code: lambda.Code.fromAsset("lambda"),
-          environment: {
-            ACTIVITY_TABLE_NAME: dbStack.activityTable.tableName,
-          },
-        });
+// Employee activities integration
 
-        // Grant read permissions to the table
-        dbStack.activityTable.grantReadData(getEmployeeActivitiesLambda);
+// Lambda to retrieve employee activity logs (GET)
+const getEmployeeActivitiesLambda = new lambda.Function(this, "GetEmployeeActivitiesLambda", {
+  runtime: lambda.Runtime.PYTHON_3_11,
+  handler: "getEmployeeActivities.handler",
+  code: lambda.Code.fromAsset("lambda"),
+  environment: {
+    ACTIVITY_TABLE_NAME: dbStack.activityTable.tableName,
+  },
+});
+dbStack.activityTable.grantReadData(getEmployeeActivitiesLambda);
 
-        // API Gateway resource
-        const activities = api.root.addResource("employee-activities");
-        activities.addMethod("GET", new apigateway.LambdaIntegration(getEmployeeActivitiesLambda), {
-          authorizationType: apigateway.AuthorizationType.NONE,
-          methodResponses: [
-            {
-              statusCode: "200",
-              responseParameters: {
-                "method.response.header.Access-Control-Allow-Origin": true,
-                "method.response.header.Access-Control-Allow-Headers": true,
-                "method.response.header.Access-Control-Allow-Methods": true,
-              },
-            },
-          ],
-        });
+// Lambda to log employee activities (POST)
+const logEmployeeActivitiesLambda = new lambda.Function(this, "LogEmployeeActivitiesLambda", {
+  runtime: lambda.Runtime.PYTHON_3_11,
+  handler: "logEmployeeActivities.handler",
+  code: lambda.Code.fromAsset("lambda"),
+  environment: {
+    ACTIVITY_TABLE_NAME: dbStack.activityTable.tableName,
+  },
+});
+dbStack.activityTable.grantWriteData(logEmployeeActivitiesLambda);
 
-        activities.addCorsPreflight({
-          allowOrigins: ["http://localhost:3000"],
-          allowMethods: ["GET", "OPTIONS"],
-        });
+// API Gateway resource
+const activities = api.root.addResource("employee-activities");
+
+// GET method
+activities.addMethod("GET", new apigateway.LambdaIntegration(getEmployeeActivitiesLambda), {
+  authorizationType: apigateway.AuthorizationType.NONE,
+  methodResponses: [
+    {
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": true,
+        "method.response.header.Access-Control-Allow-Headers": true,
+        "method.response.header.Access-Control-Allow-Methods": true,
+      },
+    },
+  ],
+});
+
+// POST method
+activities.addMethod("POST", new apigateway.LambdaIntegration(logEmployeeActivitiesLambda), {
+  authorizationType: apigateway.AuthorizationType.NONE,
+  methodResponses: [
+    {
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": true,
+        "method.response.header.Access-Control-Allow-Headers": true,
+        "method.response.header.Access-Control-Allow-Methods": true,
+      },
+    },
+  ],
+});
+
+// CORS configuration (include POST)
+activities.addCorsPreflight({
+  allowOrigins: ["http://localhost:3000"],  // Replace with your frontend origin
+  allowMethods: ["GET", "POST", "OPTIONS"],
+});
+
 
       // Lambda function for RawTrans
       const getFromTransRawLambda = new lambda.Function(this, 'GetFromTransRawLambda', {

@@ -362,3 +362,49 @@
   margin-left: 10px;
   font-size: 14px;
 }
+.transaction-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.flag-container {
+  position: relative;
+}
+
+.flag-dropdown {
+  position: absolute;
+  top: 100%;  /* Below the Flag button */
+  left: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  list-style: none;
+  padding: 0;
+  margin-top: 0.25rem;
+  width: 180px;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.flag-dropdown li {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.flag-dropdown li:hover {
+  background-color: #f0f0f0;
+}
+
+.selected-action {
+  font-weight: bold;
+  color: #333;
+}
+.action-btn.close {
+  background-color: #333;  /* optional dark styling */
+  color: white;
+}
+
+

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./TransactionDetail.css";
-import {
-  FaBoxOpen, FaGlobe, FaMoneyBill, FaBalanceScale,
-  FaChartLine, FaFileAlt, FaFlag, FaUnlock, FaLock, FaTrash
-} from "react-icons/fa";
+import { FaBoxOpen, FaGlobe, FaMoneyBill, FaBalanceScale, FaChartLine, FaFileAlt, FaFlag, FaTrash ,FaLock} from "react-icons/fa";
+import axios from "axios";
 
 const TransactionDetail = () => {
   const [comment, setComment] = useState("");
@@ -12,24 +10,68 @@ const TransactionDetail = () => {
   const [showAllActions, setShowAllActions] = useState(true);
 
   const userName = "Ahmed"; // Replace with logged-in user
+  const trxId = "TRX-2025000"; // Replace with your transaction ID from router/URL if needed
+  const [showFlagMenu, setShowFlagMenu] = useState(false);
+  const [showCloseMenu, setShowCloseMenu] = useState(false);
+  const [selectedAction, setSelectedAction] = useState("");
+     // Replace with actual logged-in user
 
-  // Load persisted status on mount
+  const arabicActions = [
+    "تعديل البيان",
+    "تحويل الى الشؤون القانونية",
+    "إجراءات أخرى",
+  ];
+
+  const logAction = async (action) => {
+    try {
+      await axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities", {
+        TransactionID: trxId,
+        EmployeeName: userName,
+        Action: action,
+        Timestamp: new Date().toISOString(),
+      });
+      console.log("Logged action:", action);
+    } catch (error) {
+      console.error("Error logging activity:", error);
+    }
+  };
+
+  const handleFlagSelect = (action) => {
+    const logText = `Flag: ${action}`;
+    setSelectedAction(logText);
+    setShowFlagMenu(false);
+    logAction(logText);
+  };
+
+  const handleCloseCase = () => {
+    const logText = "Close Case";
+    setSelectedAction(logText);
+    logAction(logText);
+  };
+
   useEffect(() => {
+    // Restore status from localStorage
     const savedStatus = localStorage.getItem("transactionStatus");
     if (savedStatus) {
       setActiveAction(savedStatus);
       setShowAllActions(false);
     }
+
+    // Log "view" to the activities endpoint
+    axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities", {
+      TransactionID: trxId,
+      Action: "Open",
+      EmployeeName: userName,
+      Timestamp: new Date().toISOString()
+    }).catch(console.error);
   }, []);
 
-  // Save status to localStorage
   const handleAction = (action) => {
     setActiveAction(action);
     setShowAllActions(false);
     localStorage.setItem("transactionStatus", action);
   };
 
-  // Clear status and show options
   const resetAction = () => {
     setShowAllActions(true);
     localStorage.removeItem("transactionStatus");
@@ -110,34 +152,39 @@ const TransactionDetail = () => {
     <div className="report-container">
       <h2 className="report-title">Transaction Details</h2>
 
+     
       <div className="transaction-actions">
-        <span className="status-label">Status:</span>
+      <span className="status-label">الإجراء المتخذ:</span>
 
-        {showAllActions ? (
-          <>
-            <button className="action-btn" onClick={() => handleAction("Flag")}><FaFlag /> Flag</button>
-            <button className="action-btn" onClick={() => handleAction("Open")}><FaUnlock /> Open</button>
-            <button className="action-btn" onClick={() => handleAction("Close")}><FaLock /> Close</button>
-          </>
-        ) : (
-          <>
-            <button
-              className={`action-btn ${
-                activeAction === "Flag"
-                  ? "flag"
-                  : activeAction === "Open"
-                  ? "open"
-                  : "close"
-              }`}
-            >
-              {activeAction === "Flag" && <><FaFlag /> Flag</>}
-              {activeAction === "Open" && <><FaUnlock /> Open</>}
-              {activeAction === "Close" && <><FaLock /> Close</>}
-            </button>
-            <button className="change-status-btn" onClick={resetAction}>Change Status</button>
-          </>
+      {/* 🔥 Flag button and dropdown */}
+      <div className="flag-container">
+        <button className="action-btn flag" onClick={() => setShowFlagMenu(prev => !prev)}>
+          <FaFlag /> Flag
+        </button>
+        {showFlagMenu && (
+          <ul className="flag-dropdown">
+            {arabicActions.map((action, idx) => (
+              <li key={idx} onClick={() => handleFlagSelect(action)}>
+                {action}
+              </li>
+            ))}
+          </ul>
         )}
       </div>
+
+      {/* 🔒 Close Case button */}
+      <button className="action-btn close" onClick={handleCloseCase}>
+        <FaLock /> Close Case
+      </button>
+
+      {/* 🔥 Show selected action */}
+      {selectedAction && (
+        <div className="selected-action">
+          الإجراء المختار: {selectedAction}
+        </div>
+      )}
+    </div>
+
 
       <div className="row-group">
         <Section title="Product & HS Code" icon={<FaBoxOpen />} rows={[
@@ -228,3 +275,4 @@ const TransactionDetail = () => {
 };
 
 export default TransactionDetail;
+
