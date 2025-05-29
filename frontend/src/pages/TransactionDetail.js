@@ -90,12 +90,21 @@ const TransactionDetail = () => {
       <table>
         <tbody>
           {rows.map(([label, value]) => (
-            <tr key={label}><th>{label}</th><td>{value}</td></tr>
+            <tr key={label}><th>{label}</th><td>{value || "-"}</td></tr>
           ))}
         </tbody>
       </table>
     </div>
   );
+
+  if (!data) {
+    return (
+      <div className="report-container">
+        <h2 className="report-title">Transaction Details</h2>
+        <p style={{ textAlign: "center", marginTop: "2rem" }}>Loading or not found...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="report-container">

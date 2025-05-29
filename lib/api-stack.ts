@@ -59,6 +59,7 @@ export class APIStack extends cdk.Stack {
         CASES_TABLE_NAME: dbStack.casesTable.tableName,
       },
     });
+    
 
     // Lambda function for Hello World
     const helloLambda = new lambda.Function(this, "HelloLambda", {
@@ -121,9 +122,9 @@ export class APIStack extends cdk.Stack {
     dbStack.casesTable.grantReadWriteData(insertCaseLambda);
     dbStack.casesTable.grantReadData(getCasesLambda);
     dbStack.casesTable.grantReadWriteData(insertSampleCaseLambda);
+  
 
     
-
     // Create the API Gateway
     const api = new apigateway.RestApi(this, "[SenseAI]Api", {
       restApiName: " SensAI Service",
@@ -196,7 +197,7 @@ export class APIStack extends cdk.Stack {
         }); 
 
         uploadhistory.addCorsPreflight({
-          allowOrigins: ["http://localhost:3000'"],
+          allowOrigins: ["http://localhost:3000"],
           allowMethods: ["GET","OPTIONS"],
         });
 
@@ -209,7 +210,6 @@ export class APIStack extends cdk.Stack {
           code: lambda.Code.fromAsset("lambda"),     
           environment: {
             KNOWLEDGE_BASE_ID: "FAIIYRNX5D",
-  
             MODEL_ARN: "arn:aws:bedrock:eu-west-1::foundation-model/amazon.nova-pro-v1:0"
           },
           timeout: cdk.Duration.seconds(30)
@@ -284,9 +284,54 @@ export class APIStack extends cdk.Stack {
           allowMethods: ["GET", "OPTIONS"],
         });
 
+      // Lambda function for RawTrans
+      const getFromTransRawLambda = new lambda.Function(this, 'GetFromTransRawLambda', {
+        runtime: lambda.Runtime.PYTHON_3_11,
+        handler: 'getFromTransRaw.handler',
+        code: lambda.Code.fromAsset('lambda'),
+        environment: {
+          TABLE_NAME: dbStack.TransRawTable2.tableName,
+        },
+      });
 
-        
-        
+      // Grant Lambda read access to table
+      dbStack.TransRawTable2.grantReadData(getFromTransRawLambda);
+      
+      // API Gateway resource
+        const rawtrans = api.root.addResource("RawTransaction");
+        rawtrans.addMethod("GET", new apigateway.LambdaIntegration(getFromTransRawLambda), {
+          authorizationType: apigateway.AuthorizationType.NONE,
+          methodResponses: [
+            {
+              statusCode: "200",
+              responseParameters: {
+                "method.response.header.Access-Control-Allow-Origin": true,
+                "method.response.header.Access-Control-Allow-Headers": true,
+                "method.response.header.Access-Control-Allow-Methods": true,
+              },
+            },
+          ],
+        });
+        rawtrans.addMethod("POST", new apigateway.LambdaIntegration(getFromTransRawLambda), {
+  authorizationType: apigateway.AuthorizationType.NONE,
+  methodResponses: [
+    {
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": true,
+        "method.response.header.Access-Control-Allow-Headers": true,
+        "method.response.header.Access-Control-Allow-Methods": true,
+      },
+    },
+  ],
+});
+
+        rawtrans.addCorsPreflight({
+          allowOrigins: ["http://localhost:3000"],
+          allowMethods: ["GET", "OPTIONS","OPTIONS"],
+        });
+
+                    
         
     
 

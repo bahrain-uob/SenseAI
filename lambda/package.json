@@ -10,7 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-sagemaker": "^3.801.0",
-    "aws-sdk": "^2.1692.0"
+    "aws-sdk": "^2.1692.0",
+    "xlsx": "^0.18.5"
   },
   "description": ""
 }
