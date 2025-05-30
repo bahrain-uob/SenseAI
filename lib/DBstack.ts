@@ -36,6 +36,7 @@ export class DBStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY, // change to RETAIN for production
     });
 
+
     //table for audit page v2
     this.TransRawTable2 = new dynamodb.Table(this, 'TransRawV2', {
       tableName: 'TransRawV2',

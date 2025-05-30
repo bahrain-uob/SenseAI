@@ -17,7 +17,7 @@ export class MyCdkStack extends cdk.Stack {
   public readonly TransactionUploadsBucket: s3.Bucket;
   public readonly uploadobjBucket: s3.Bucket; // i will check if it nescceary or not
 
-  constructor(scope: cdk.App, id: string, rawTransTable: dynamodb.Table,props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, TransRawTable2: dynamodb.Table,props?: cdk.StackProps) {
     super(scope, id, props);
 
 
@@ -34,7 +34,7 @@ export class MyCdkStack extends cdk.Stack {
             allowedHeaders: ['*'],
           }],
         });
-if (rawTransTable) {
+
     //lambda function tp parse the uploaded file and insert it into Dynamo
     const parseAndInsertLambda = new lambda.Function(this, 'parseAndInsertLambda', {
         runtime: lambda.Runtime.NODEJS_18_X,
@@ -43,7 +43,7 @@ if (rawTransTable) {
         memorySize: 256, // (optional) Give more memory for faster processing
         code: lambda.Code.fromAsset('lambda'), // folder with parseAndInsertLambda.js
         environment: {
-          TABLE_NAME: rawTransTable.tableName,
+          TABLE_NAME: TransRawTable2.tableName,
         },
       });
 
@@ -51,7 +51,7 @@ if (rawTransTable) {
       this.uploadobjBucket.grantRead(parseAndInsertLambda);
 
       // 🔐 Grant DynamoDB write permission
-      rawTransTable.grantWriteData(parseAndInsertLambda);
+      TransRawTable2.grantWriteData(parseAndInsertLambda);
 
       // 📩 Add S3 event trigger
       this.uploadobjBucket.addEventNotification(
@@ -156,7 +156,7 @@ new glue.CfnJob(this, 'GlueJob', {
   defaultArguments: {
     "--JOB_NAME": glueJobName,
     "--S3_PATH": `s3://${this.uploadobjBucket.bucketName}/`, // 🧠 read from this bucket dynamically
-    "--DDB_TABLE": rawTransTable.tableName                   
+    "--DDB_TABLE": TransRawTable2.tableName                   
   },
   glueVersion: '4.0',
   numberOfWorkers: 2,
@@ -191,7 +191,7 @@ this.uploadobjBucket.addEventNotification(
   new s3n.LambdaDestination(glueTriggerLambda),
   { suffix: '.xlsx' }
 );
-}
+
     
   }
 }
