@@ -19,6 +19,7 @@ export class MyCdkStack extends cdk.Stack {
 
      // S3 Bucket for uploading obj in bucket
     this.uploadobjBucket = new s3.Bucket(this, 'uploadobjBucket', {
+    
           removalPolicy: cdk.RemovalPolicy.DESTROY,
           autoDeleteObjects: true,
           cors: [{
