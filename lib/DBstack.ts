@@ -47,6 +47,8 @@ export class DBStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY, // change to RETAIN for production
     });
 
+
+
    /*  this.RAWTRANSACtion = new dynamodb.Table(this, 'RawTransaTable', {
       tableName: 'RawTrans',
       partitionKey: {

@@ -6,6 +6,12 @@ import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import { RemovalPolicy } from "aws-cdk-lib";
+import { Construct } from 'constructs';
+import * as glue from 'aws-cdk-lib/aws-glue';
+import * as s3assets from 'aws-cdk-lib/aws-s3-assets';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as lambdaNode from 'aws-cdk-lib/aws-lambda';
+
 
 export class MyCdkStack extends cdk.Stack {
   public readonly TransactionUploadsBucket: s3.Bucket;
@@ -28,7 +34,7 @@ export class MyCdkStack extends cdk.Stack {
             allowedHeaders: ['*'],
           }],
         });
-
+if (rawTransTable) {
     //lambda function tp parse the uploaded file and insert it into Dynamo
     const parseAndInsertLambda = new lambda.Function(this, 'parseAndInsertLambda', {
         runtime: lambda.Runtime.NODEJS_18_X,
@@ -114,6 +120,78 @@ export class MyCdkStack extends cdk.Stack {
       value: cloudfrontDistribution.distributionDomainName,
       description: "The URL of the CloudFront distribution for the website",
     });
+new cdk.CfnOutput(this, "TransactionUploadsBucket", {
+  value: this.TransactionUploadsBucket.bucketArn,
+  exportName: "TransactionUploadsBucket"
+});
+
+    // 🔷 GLUE JOB SETUP --------------------
+
+const glueJobName = 's3-to-dynamo-job';
+
+// IAM role for Glue job
+const glueRole = new iam.Role(this, 'GlueJobRole', {
+  assumedBy: new iam.ServicePrincipal('glue.amazonaws.com'),
+  managedPolicies: [
+    iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSGlueServiceRole'),
+    iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess'),
+    iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'),
+  ],
+});
+
+// Upload the Glue script (Python file)
+const glueScript = new s3assets.Asset(this, 'GlueScript', {
+  path: 'lambda/s3-to-dynamo.py',
+});
+
+// Define the Glue Job
+new glue.CfnJob(this, 'GlueJob', {
+  name: glueJobName,
+  role: glueRole.roleArn,
+  command: {
+    name: 'glueetl',
+    scriptLocation: `s3://${glueScript.s3BucketName}/${glueScript.s3ObjectKey}`,
+    pythonVersion: '3',
+  },
+  defaultArguments: {
+    "--JOB_NAME": glueJobName,
+    "--S3_PATH": `s3://${this.uploadobjBucket.bucketName}/`, // 🧠 read from this bucket dynamically
+    "--DDB_TABLE": rawTransTable.tableName                   
+  },
+  glueVersion: '4.0',
+  numberOfWorkers: 2,
+  workerType: 'G.1X',
+});
+
+// 🔷 LAMBDA TRIGGER SETUP --------------------
+
+const glueTriggerRole = new iam.Role(this, 'GlueTriggerLambdaRole', {
+  assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+  managedPolicies: [
+    iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+    iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3ReadOnlyAccess'),
+    iam.ManagedPolicy.fromAwsManagedPolicyName('AWSGlueConsoleFullAccess'),
+  ],
+});
+
+const glueTriggerLambda = new lambda.Function(this, 'GlueTriggerLambda', {
+  runtime: lambda.Runtime.PYTHON_3_9,
+  handler: 'glueTrigger.handler',
+  code: lambda.Code.fromAsset('lambda'), // folder should contain glueTrigger.py
+  environment: {
+    GLUE_JOB_NAME: glueJobName,
+  },
+  role: glueTriggerRole,
+});
+
+// 🔷 S3 Trigger for Excel uploads --------------------
+
+this.uploadobjBucket.addEventNotification(
+  s3.EventType.OBJECT_CREATED,
+  new s3n.LambdaDestination(glueTriggerLambda),
+  { suffix: '.xlsx' }
+);
+}
     
   }
 }

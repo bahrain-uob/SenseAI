@@ -4,8 +4,9 @@ from awsglue.context import GlueContext
 from awsglue.utils import getResolvedOptions
 from awsglue.job import Job
 
-args = getResolvedOptions(sys.argv, ['JOB_NAME', 'S3_PATH'])
+args = getResolvedOptions(sys.argv, ['JOB_NAME', 'S3_PATH','DDB_TABLE'])
 s3_path = args['S3_PATH']
+ddb_table = args['DDB_TABLE']
 
 sc = SparkContext()
 glueContext = GlueContext(sc)
@@ -27,7 +28,7 @@ glueContext.write_dynamic_frame.from_options(
     frame=input_data,
     connection_type="dynamodb",
     connection_options={
-        "dynamodb.output.tableName": "RawTrans",
+        "dynamodb.output.tableName": "ddb_table",
         "dynamodb.throughput.write.percent": "1.0"
     }
 )

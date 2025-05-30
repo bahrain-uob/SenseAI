@@ -9,23 +9,19 @@ import { AnomalyStack } from '../lib/anomaly-stack';
 import { PreprocessingStack } from '../lib/preprocessing-stack';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import * as s3 from "aws-cdk-lib/aws-s3";
-import { GlueStack } from '../lib/glue-stack';
+
 const app = new cdk.App();
 
 // Create the DBStack
 const dbStack = new DBStack(app, "DBStack", {
   // Any custom stack props you may have for DBStack
 });
-const MyCdkAppStack = new MyCdkStack(app, "MyCdkAppStack",dbStack.rawTransTable);
+const MyCdkAppStack = new MyCdkStack(app, "MyCdkAppStack",dbStack.TransRawTable2);
+/* const MyCdkAppStack = new MyCdkStack(app, "MyCdkAppStack", undefined as any); */
 
 // Create the APIStack, passing in the DBStack as a dependency
 const apistack= new APIStack(app, "APIStack", dbStack, MyCdkAppStack.TransactionUploadsBucket,MyCdkAppStack.uploadobjBucket); 
 
-
-new GlueStack(app, 'GlueStack', {
-  ingestBucket: MyCdkAppStack.uploadobjBucket,
-  dynamoTable: dbStack.rawTransTable
-});
 
 
 

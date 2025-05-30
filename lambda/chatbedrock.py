@@ -15,7 +15,7 @@ def handler(event, context):
         }
 
     # Custom bilingual prompt for controlled answer generation
-    instruction = """
+    instruction = 
 أنت مساعد للإجابة على الأسئلة المتعلقة بشئون الجمارك في مملكة البحرين. سيتم تزويدك بنتائج بحث من قاعدة المعرفة الرسمية للجمارك. استخدم فقط هذه النتائج للإجابة على سؤال المستخدم.
 
 - إذا كان السؤال باللغة العربية، يجب أن تكون الإجابة باللغة العربية فقط.
@@ -39,7 +39,7 @@ $output_format_instructions$
 
 Here is the user's query:
 $query$
-""".strip()
+.strip()
 
     response = bedrock_agent.retrieve_and_generate(
         input={"text": instruction},
