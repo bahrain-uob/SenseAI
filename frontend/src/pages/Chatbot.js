@@ -28,8 +28,25 @@ const Chatbot = () => {
 
   const [sessions, setSessions] = useState(() => {
     const saved = JSON.parse(localStorage.getItem('chat-sessions') || '{}');
+  
+    // ✅ One-time: Import mini chat history if no session exists yet
+    if (Object.keys(saved).length === 0) {
+      const mini = JSON.parse(localStorage.getItem('chat-mini-history') || '[]');
+      if (mini.length > 0) {
+        const id = Date.now().toString();
+        saved[id] = {
+          id,
+          title: `Mini Chat Backup`,
+          messages: mini,
+        };
+        localStorage.setItem('chat-sessions', JSON.stringify(saved));
+      }
+    }
+  
     return saved;
   });
+  
+  
 
   const [activeSessionId, setActiveSessionId] = useState(() => {
     const keys = Object.keys(sessions);
@@ -43,8 +60,16 @@ const Chatbot = () => {
 
   const saveSessions = (updated) => {
     localStorage.setItem('chat-sessions', JSON.stringify(updated));
+  
+    // ✅ Sync the current session to the mini chat history
+    const active = updated[activeSessionId];
+    if (active && active.messages) {
+      localStorage.setItem('chat-mini-history', JSON.stringify(active.messages));
+    }
+  
     setSessions(updated);
   };
+  
 
   const startNewChat = () => {
     const id = Date.now().toString();
@@ -80,39 +105,51 @@ const Chatbot = () => {
     setInput('');
     setTyping(true);
 
-    setTimeout(() => {
-      let botReply = {
-        text:
-          'To generate a report:\n1. Select a type\n2. Pick a date range\n3. Click generate\n4. Download the PDF',
-        sender: 'bot'
-      };
-
-      if (['hi', 'hello'].some(g => lower.includes(g))) {
-        botReply = {
-          text:
-            'Nice to meet you! 😊\nI can help you generate reports, check uploads, and more.\nWhat would you like to do?',
+    (async () => {
+      try {
+        const res = await fetch('https://xu9hwa7e40.execute-api.eu-west-1.amazonaws.com/prod/chatbedrock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: input })
+        });
+    
+        const data = await res.json();
+    
+        const botReply = {
+          text: data.answer || "I'm sorry, I couldn't understand that.",
           sender: 'bot'
         };
-      } else {
-        for (const rule of mockCustomsResponses) {
-          if (rule.keywords.some(k => lower.includes(k))) {
-            botReply = { text: rule.reply, sender: 'bot' };
-            break;
+    
+        const finalMessages = [...updatedMessages, botReply];
+        const updated = {
+          ...sessions,
+          [activeSessionId]: {
+            ...sessions[activeSessionId],
+            messages: finalMessages
           }
-        }
+        };
+        saveSessions(updated);
+      } catch (err) {
+        const errorReply = {
+          text: 'Error: Unable to reach the assistant. Please try again later.',
+          sender: 'bot'
+        };
+    
+        const finalMessages = [...updatedMessages, errorReply];
+        const updated = {
+          ...sessions,
+          [activeSessionId]: {
+            ...sessions[activeSessionId],
+            messages: finalMessages
+          }
+        };
+        saveSessions(updated);
+        console.error('Bedrock API error:', err);
+      } finally {
+        setTyping(false);
       }
-
-      const finalMessages = [...updatedMessages, botReply];
-      const updated = {
-        ...sessions,
-        [activeSessionId]: {
-          ...sessions[activeSessionId],
-          messages: finalMessages
-        }
-      };
-      saveSessions(updated);
-      setTyping(false);
-    }, 800);
+    })();
+    
   };
 
   useEffect(() => {

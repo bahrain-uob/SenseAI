@@ -1,8 +1,51 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./TransactionDetail.css";
-import { FaBoxOpen, FaGlobe, FaMoneyBill, FaBalanceScale, FaChartLine, FaFileAlt } from "react-icons/fa";
+import {
+  FaBoxOpen, FaGlobe, FaMoneyBill, FaBalanceScale,
+  FaChartLine, FaFileAlt, FaFlag, FaUnlock, FaLock, FaTrash
+} from "react-icons/fa";
 
 const TransactionDetail = () => {
+  const [comment, setComment] = useState("");
+  const [commentList, setCommentList] = useState([]);
+  const [activeAction, setActiveAction] = useState(null);
+  const [showAllActions, setShowAllActions] = useState(true);
+
+  const userName = "Ahmed"; // Replace with logged-in user
+
+  // Load persisted status on mount
+  useEffect(() => {
+    const savedStatus = localStorage.getItem("transactionStatus");
+    if (savedStatus) {
+      setActiveAction(savedStatus);
+      setShowAllActions(false);
+    }
+  }, []);
+
+  // Save status to localStorage
+  const handleAction = (action) => {
+    setActiveAction(action);
+    setShowAllActions(false);
+    localStorage.setItem("transactionStatus", action);
+  };
+
+  // Clear status and show options
+  const resetAction = () => {
+    setShowAllActions(true);
+    localStorage.removeItem("transactionStatus");
+  };
+
+  const handleCommentSubmit = () => {
+    if (comment.trim()) {
+      setCommentList(prev => [...prev, { text: comment, user: userName }]);
+      setComment("");
+    }
+  };
+
+  const handleCommentDelete = (indexToDelete) => {
+    setCommentList(prev => prev.filter((_, idx) => idx !== indexToDelete));
+  };
+
   const data = {
     hsCode: "11022000",
     description: "Maize (corn) flour",
@@ -18,80 +61,6 @@ const TransactionDetail = () => {
     localAmount: "15000",
     vatRate: "5%",
     vatBHD: "750",
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
     fees: "300",
     grossWeight: "21263",
     netWeight: "21263",
@@ -132,89 +101,121 @@ const TransactionDetail = () => {
     <div className="report-container">
       <h2 className="report-title">Transaction Details</h2>
 
-      <div className="row-group">
-        <Section
-          title="Product & HS Code"
-          icon=	{<FaBoxOpen />}
-          rows={[
-            ["HS Code", data.hsCode],
-            ["Description", data.description],
-            ["Regime", data.regime],
-            ["HS Rate", data.hsRate],
-            ["Commercial Description", data.commercialDesc],
-            ["Package Code", data.packageCode],
-            ["Supplementary Unit", data.supUnit],
-          ]}
-        />
+      <div className="transaction-actions">
+        <span className="status-label">Status:</span>
 
-        <Section
-          title="Origin & Export Details"
-          icon={	<FaGlobe />}
-          rows={[
-            ["Country of Origin", data.country],
-            ["Exporter CR", data.exporterCR],
-            ["Exporter Name", data.exporterName],
-          ]}
-        />
-
-        <Section
-          title="Invoice & Value Details"
-          icon={	<FaMoneyBill />}
-          rows={[
-            ["Invoice Currency", data.currency],
-            ["Local Amount", data.localAmount],
-            ["VAT Rate", data.vatRate],
-            ["VAT BHD", data.vatBHD],
-            ["Fees", data.fees],
-          ]}
-        />
+        {showAllActions ? (
+          <>
+            <button className="action-btn" onClick={() => handleAction("Flag")}><FaFlag /> Flag</button>
+            <button className="action-btn" onClick={() => handleAction("Open")}><FaUnlock /> Open</button>
+            <button className="action-btn" onClick={() => handleAction("Close")}><FaLock /> Close</button>
+          </>
+        ) : (
+          <>
+            <button
+              className={`action-btn ${
+                activeAction === "Flag"
+                  ? "flag"
+                  : activeAction === "Open"
+                  ? "open"
+                  : "close"
+              }`}
+            >
+              {activeAction === "Flag" && <><FaFlag /> Flag</>}
+              {activeAction === "Open" && <><FaUnlock /> Open</>}
+              {activeAction === "Close" && <><FaLock /> Close</>}
+            </button>
+            <button className="change-status-btn" onClick={resetAction}>Change Status</button>
+          </>
+        )}
       </div>
 
       <div className="row-group">
-        <Section
-          title="Weight & Measurement"
-          icon={	<FaBalanceScale />}
-          rows={[
-            ["Gross Weight", data.grossWeight],
-            ["Net Weight", data.netWeight],
-            ["Amount / Net Weight", data.amtNetWeight],
-            ["Net Weight / Package", data.netPerPackage],
-            ["Net Weight / Sup", data.netPerSup],
-            ["Amount / Package", data.amtPerPackage],
-            ["Amount / Sup", data.amtPerSup],
-            ["Sup Amt", data.supAmt],
-          ]}
-        />
+        <Section title="Product & HS Code" icon={<FaBoxOpen />} rows={[
+          ["HS Code", data.hsCode],
+          ["Description", data.description],
+          ["Regime", data.regime],
+          ["HS Rate", data.hsRate],
+          ["Commercial Description", data.commercialDesc],
+          ["Package Code", data.packageCode],
+          ["Supplementary Unit", data.supUnit],
+        ]} />
 
-        <Section
-          title="Pricing Analysis"
-          icon={	<FaChartLine />}
-          rows={[
-            ["Max Amount", data.maxAmo],
-            ["Average Amount", data.aveAmo],
-            ["Min Amount", data.minAmo],
-            ["Main Max", data.mainMax],
-            ["Main Min", data.mainMin],
-          ]}
-        />
+        <Section title="Origin & Export Details" icon={<FaGlobe />} rows={[
+          ["Country of Origin", data.country],
+          ["Exporter CR", data.exporterCR],
+          ["Exporter Name", data.exporterName],
+        ]} />
 
-        <Section
-          title="Declaration & Parties"
-          icon={<FaFileAlt />}
-          rows={[
-            ["Registration Serial", data.regSerial],
-            ["Registration Number", data.regNumber],
-            ["Registration Date", data.regDate],
-            ["Declarant CR", data.declarantCR],
-            ["Declarant Name", data.declarantName],
-            ["Consignee CR", data.consigneeCR],
-            ["Consignee Name", data.consigneeName],
-          ]}
+        <Section title="Invoice & Value Details" icon={<FaMoneyBill />} rows={[
+          ["Invoice Currency", data.currency],
+          ["Local Amount", data.localAmount],
+          ["VAT Rate", data.vatRate],
+          ["VAT BHD", data.vatBHD],
+          ["Fees", data.fees],
+        ]} />
+      </div>
+
+      <div className="row-group">
+        <Section title="Weight & Measurement" icon={<FaBalanceScale />} rows={[
+          ["Gross Weight", data.grossWeight],
+          ["Net Weight", data.netWeight],
+          ["Amount / Net Weight", data.amtNetWeight],
+          ["Net Weight / Package", data.netPerPackage],
+          ["Net Weight / Sup", data.netPerSup],
+          ["Amount / Package", data.amtPerPackage],
+          ["Amount / Sup", data.amtPerSup],
+          ["Sup Amt", data.supAmt],
+        ]} />
+
+        <Section title="Pricing Analysis" icon={<FaChartLine />} rows={[
+          ["Max Amount", data.maxAmo],
+          ["Average Amount", data.aveAmo],
+          ["Min Amount", data.minAmo],
+          ["Main Max", data.mainMax],
+          ["Main Min", data.mainMin],
+        ]} />
+
+        <Section title="Declaration & Parties" icon={<FaFileAlt />} rows={[
+          ["Registration Serial", data.regSerial],
+          ["Registration Number", data.regNumber],
+          ["Registration Date", data.regDate],
+          ["Declarant CR", data.declarantCR],
+          ["Declarant Name", data.declarantName],
+          ["Consignee CR", data.consigneeCR],
+          ["Consignee Name", data.consigneeName],
+        ]} />
+      </div>
+
+      <div className="comment-section">
+        <h3>Leave a Comment</h3>
+        <textarea
+          placeholder="Write your comment here..."
+          rows={4}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          className="comment-input"
         />
+        <button className="submit-comment" onClick={handleCommentSubmit}>Submit Comment</button>
+
+        {commentList.length > 0 && (
+          <div className="submitted-comments">
+            <h4>Previous Comments</h4>
+            <ul>
+              {commentList.map((c, i) => (
+                <li key={i}>
+                  <span><strong>{c.user}:</strong> {c.text}</span>
+                  <button className="delete-comment" onClick={() => handleCommentDelete(i)}>
+                    <FaTrash />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default TransactionDetail;
-

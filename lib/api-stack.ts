@@ -204,11 +204,13 @@ export class APIStack extends cdk.Stack {
 // Bedrock endpoint configuration for the chatbot
         const chatBedrockLambda = new lambda.Function(this, "ChatBedrockLambda", {
           runtime: lambda.Runtime.PYTHON_3_11,
-          handler: "query_kb_lambda.lambda_handler", 
+          handler: "chatbedrock.lambda_handler", 
+        
           code: lambda.Code.fromAsset("lambda"),     
           environment: {
             KNOWLEDGE_BASE_ID: "FAIIYRNX5D",
-            MODEL_ARN: "arn:aws:bedrock:eu-west-1::foundation-model/mistral.mixtral-8x7b-instruct-v0:1"
+  
+            MODEL_ARN: "arn:aws:bedrock:eu-west-1::foundation-model/amazon.nova-pro-v1:0"
           },
           timeout: cdk.Duration.seconds(30)
         });
