@@ -20,6 +20,8 @@ two cloumns are added (rowid (becuse there is no uniqe cloumn) + risk_percentage
 inside the lambda folder run this in command line : python3 delete_rawtransaction.py
 ----> python script created for adding rowid and random persentage : uniqerow.py
 
+Dev#5 is skipped nothing to do with it
+
 
 dont forget to install these in lambda/ folder
 npm init -y
