@@ -100,7 +100,7 @@ export class APIStack extends cdk.Stack {
             BUCKET_NAME: uploadobjBucket.bucketName,
           },
         });
-        // Grant permissions
+        //  Grant permissions
     uploadobjBucket.grantPut(uploadLambda);
 
     // Lambda function to get upload history
