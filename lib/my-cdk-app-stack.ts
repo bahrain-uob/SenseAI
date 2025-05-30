@@ -1,14 +1,17 @@
 import * as cdk from "aws-cdk-lib";
-import * as s3 from "aws-cdk-lib/aws-s3";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
+import * as s3 from "aws-cdk-lib/aws-s3";
+import * as s3n from "aws-cdk-lib/aws-s3-notifications";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import { RemovalPolicy } from "aws-cdk-lib";
 
 export class MyCdkStack extends cdk.Stack {
   public readonly TransactionUploadsBucket: s3.Bucket;
   public readonly uploadobjBucket: s3.Bucket; // i will check if it nescceary or not
 
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, rawTransTable: dynamodb.Table,props?: cdk.StackProps) {
     super(scope, id, props);
 
 
@@ -19,11 +22,40 @@ export class MyCdkStack extends cdk.Stack {
           removalPolicy: cdk.RemovalPolicy.DESTROY,
           autoDeleteObjects: true,
           cors: [{
-            allowedOrigins: ['https://d10uresn4y47do.cloudfront.net'], // Or use your CloudFront URL
+            allowedOrigins: ['http://localhost:3000'], // Or use your CloudFront URL
             allowedMethods: [s3.HttpMethods.PUT, s3.HttpMethods.GET, s3.HttpMethods.HEAD,s3.HttpMethods.POST],
             allowedHeaders: ['*'],
           }],
         });
+
+    //lambda function tp parse the uploaded file and insert it into Dynamo
+    const parseAndInsertLambda = new lambda.Function(this, 'parseAndInsertLambda', {
+        runtime: lambda.Runtime.NODEJS_18_X,
+        handler: 'parseAndInsert.handler',
+        timeout: cdk.Duration.seconds(30), // ✅ Increase to 30 seconds
+        memorySize: 256, // (optional) Give more memory for faster processing
+        code: lambda.Code.fromAsset('lambda'), // folder with parseAndInsertLambda.js
+        environment: {
+          TABLE_NAME: rawTransTable.tableName,
+        },
+      });
+
+      // 🔐 Grant S3 read permission
+      this.uploadobjBucket.grantRead(parseAndInsertLambda);
+
+      // 🔐 Grant DynamoDB write permission
+      rawTransTable.grantWriteData(parseAndInsertLambda);
+
+      // 📩 Add S3 event trigger
+      this.uploadobjBucket.addEventNotification(
+        s3.EventType.OBJECT_CREATED_PUT,
+        new s3n.LambdaDestination(parseAndInsertLambda)
+      );
+      // 📩 Add S3 event trigger
+      this.uploadobjBucket.addEventNotification(
+        s3.EventType.OBJECT_CREATED_POST,
+        new s3n.LambdaDestination(parseAndInsertLambda)
+      );
         
     // S3 Bucket for React Website (without public access)
     this.TransactionUploadsBucket = new s3.Bucket(this, "TransactionUploadsBucket ", {

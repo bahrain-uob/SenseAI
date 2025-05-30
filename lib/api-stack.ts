@@ -3,6 +3,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as s3 from "aws-cdk-lib/aws-s3"
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
+import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import { DBStack } from "./DBstack"; // Import DBStack
 
 import { MyCdkStack } from "./my-cdk-app-stack";
@@ -65,6 +66,31 @@ export class APIStack extends cdk.Stack {
       handler: "index.handler",
       code: lambda.Code.fromAsset("lambda"),
     });
+
+    /* //lambda function tp parse the uploaded file and insert it into Dynamo
+    const parseAndInsertLambda = new lambda.Function(this, 'parseAndInsertLambda', {
+        runtime: lambda.Runtime.NODEJS_18_X,
+        handler: 'parseAndInsert.handler',
+        code: lambda.Code.fromAsset('lambda'), // folder with parseAndInsertLambda.js
+        environment: {
+          TABLE_NAME: dbStack.rawTransTable.tableName,
+        },
+      });
+
+      // 🔐 Grant S3 read permission
+      uploadobjBucket.grantRead(parseAndInsertLambda);
+
+      // 🔐 Grant DynamoDB write permission
+      dbStack.rawTransTable.grantWriteData(parseAndInsertLambda);
+
+      // 📩 Add S3 event trigger
+      uploadobjBucket.addEventNotification(
+        s3.EventType.OBJECT_CREATED,
+        new s3n.LambdaDestination(parseAndInsertLambda)
+      ); */
+
+
+
     // Lambda function for uploaidng objects to uploadbucket s3
     const uploadLambda = new lambda.Function(this, 'uploadLambda', {
           runtime: lambda.Runtime.NODEJS_18_X,
@@ -121,7 +147,7 @@ export class APIStack extends cdk.Stack {
               });
               
               upload.addCorsPreflight({
-                allowOrigins: ["https://d10uresn4y47do.cloudfront.net"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
+                allowOrigins: ["http://localhost:3000"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
                 allowMethods: ["GET","PUT"],
                 
               });
@@ -144,7 +170,7 @@ export class APIStack extends cdk.Stack {
                         }); 
                         
                         uploadobj.addCorsPreflight({
-                          allowOrigins: ["https://d10uresn4y47do.cloudfront.net"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
+                          allowOrigins: ["http://localhost:3000"], // or ["https://d10uresn4y47do.cloudfront.net"] for production
                           allowMethods: ["GET","OPTIONS"],
                           
                         });
@@ -170,26 +196,32 @@ export class APIStack extends cdk.Stack {
         }); 
 
         uploadhistory.addCorsPreflight({
-          allowOrigins: ["https://d10uresn4y47do.cloudfront.net"],
+          allowOrigins: ["http://localhost:3000'"],
           allowMethods: ["GET","OPTIONS"],
         });
 
         
-//Bedrock endpoint configuration for the chatbot 
+// Bedrock endpoint configuration for the chatbot
         const chatBedrockLambda = new lambda.Function(this, "ChatBedrockLambda", {
           runtime: lambda.Runtime.PYTHON_3_11,
-          handler: "chatbedrock.handler", // Path: lambda/chatbedrock.py
-          code: lambda.Code.fromAsset("lambda"),
+          handler: "query_kb_lambda.lambda_handler", 
+          code: lambda.Code.fromAsset("lambda"),     
           environment: {
-            KNOWLEDGE_BASE_ID: "FAIIYRNX5D",  // ← Replace this
+            KNOWLEDGE_BASE_ID: "FAIIYRNX5D",
+            MODEL_ARN: "arn:aws:bedrock:eu-west-1::foundation-model/mistral.mixtral-8x7b-instruct-v0:1"
           },
+          timeout: cdk.Duration.seconds(30)
         });
+
+        // IAM permission to use Bedrock RetrieveAndGenerate
         chatBedrockLambda.addToRolePolicy(new iam.PolicyStatement({
           actions: ["bedrock:RetrieveAndGenerate"],
           resources: ["*"]
         }));
 
+        // API Gateway route
         const chatbedrock = api.root.addResource("chatbedrock");
+
         chatbedrock.addMethod("POST", new apigateway.LambdaIntegration(chatBedrockLambda), {
           authorizationType: apigateway.AuthorizationType.NONE,
           methodResponses: [
@@ -198,19 +230,22 @@ export class APIStack extends cdk.Stack {
               responseParameters: {
                 "method.response.header.Access-Control-Allow-Origin": true,
                 "method.response.header.Access-Control-Allow-Headers": true,
-                "method.response.header.Access-Control-Allow-Methods": true,
-              },
-            },
-          ],
+                "method.response.header.Access-Control-Allow-Methods": true
+              }
+            }
+          ]
         });
+
+        // Enable CORS
         chatbedrock.addCorsPreflight({
           allowOrigins: [
-            "http://localhost:3000", // Local dev
-            "https://d10uresn4y47do.cloudfront.net" // Production
+            "http://localhost:3000",
+            "https://d10uresn4y47do.cloudfront.net"
           ],
           allowMethods: ["POST", "OPTIONS"],
           allowHeaders: ["Content-Type"]
         });
+
         
 //Employee activities integration        
         // Lambda to retrieve employee activity logs
@@ -243,7 +278,7 @@ export class APIStack extends cdk.Stack {
         });
 
         activities.addCorsPreflight({
-          allowOrigins: ["http://localhost:3000", "https://d10uresn4y47do.cloudfront.net"],
+          allowOrigins: ["http://localhost:3000"],
           allowMethods: ["GET", "OPTIONS"],
         });
 
