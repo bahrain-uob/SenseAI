@@ -29,19 +29,19 @@ export class MyCdkStack extends cdk.Stack {
           }],
         });
 
-    //lambda function tp parse the uploaded file and insert it into Dynamo
+   //lambda function tp parse the uploaded file and insert it into Dynamo
     const parseAndInsertLambda = new lambda.Function(this, 'parseAndInsertLambda', {
         runtime: lambda.Runtime.NODEJS_18_X,
         handler: 'parseAndInsert.handler',
-        timeout: cdk.Duration.seconds(30), // ✅ Increase to 30 seconds
-        memorySize: 256, // (optional) Give more memory for faster processing
+        timeout: cdk.Duration.minutes(5), // ✅ Increase to 30 seconds
+        memorySize: 4096, // (optional) Give more memory for faster processing
         code: lambda.Code.fromAsset('lambda'), // folder with parseAndInsertLambda.js
         environment: {
            RAW_TABLE: TransRawTable.tableName,        // original
            RAW_V2_TABLE: TransRawTable2.tableName,
         },
       });
-       // ← INLINE POLICY: allow writes to your DynamoDB table
+       // ← INLINE POLICY: allow writes to your DynamoDB table Orignal*********
     parseAndInsertLambda.addToRolePolicy(new iam.PolicyStatement({
       actions: [
         'dynamodb:BatchWriteItem',
@@ -59,6 +59,8 @@ export class MyCdkStack extends cdk.Stack {
       TransRawTable2.grantWriteData(parseAndInsertLambda);
       TransRawTable.grantWriteData(parseAndInsertLambda);
 
+
+
       // 📩 Add S3 event trigger
       this.uploadobjBucket.addEventNotification(
         s3.EventType.OBJECT_CREATED_PUT,
@@ -69,7 +71,6 @@ export class MyCdkStack extends cdk.Stack {
         s3.EventType.OBJECT_CREATED_POST,
         new s3n.LambdaDestination(parseAndInsertLambda)
       );
-        
     // S3 Bucket for React Website (without public access)
     this.TransactionUploadsBucket = new s3.Bucket(this, "TransactionUploadsBucket ", {
       
