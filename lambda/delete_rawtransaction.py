@@ -32,7 +32,7 @@ if __name__ == "__main__":
     delete_all_items()
  """
 
-import boto3
+""" import boto3
 
 # Initialize DynamoDB client
 dynamodb = boto3.resource("dynamodb")
@@ -68,3 +68,4 @@ def delete_all_items():
 
 if __name__ == "__main__":
     delete_all_items()
+ """
