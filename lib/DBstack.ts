@@ -26,7 +26,7 @@ export class DBStack extends cdk.Stack {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
-    /* this.TransRawTable = new dynamodb.Table(this, 'TransRaw', {
+    this.TransRawTable = new dynamodb.Table(this, 'TransRaw', {
       tableName: 'TransRaw',
       partitionKey: {
         name: 'rowid',
@@ -34,9 +34,9 @@ export class DBStack extends cdk.Stack {
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY, // change to RETAIN for production
-    }); */
+    });
 
-    this.TransRawTable = new dynamodb.Table(this, 'TransRaw', {
+    /* this.TransRawTable = new dynamodb.Table(this, 'TransRaw', {
     tableName: 'TransRaw',
     partitionKey: {
       name: 'Reference Number',
@@ -48,10 +48,10 @@ export class DBStack extends cdk.Stack {
     },
     billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
     removalPolicy: cdk.RemovalPolicy.DESTROY, // change to RETAIN for production
-  });
+  }); */
 
     //table for audit page v2
-   /*  this.TransRawTable2 = new dynamodb.Table(this, 'TransRawV2', {
+    this.TransRawTable2 = new dynamodb.Table(this, 'TransRawV2', {
       tableName: 'TransRawV2',
       partitionKey: {
         name: 'rowid',
@@ -59,10 +59,10 @@ export class DBStack extends cdk.Stack {
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY, // change to RETAIN for production
-    }); */
+    });
 
   // Table for audit page v2 with composite key
-  this.TransRawTable2 = new dynamodb.Table(this, 'TransRawV2', {
+/*   this.TransRawTable2 = new dynamodb.Table(this, 'TransRawV2', {
     tableName: 'TransRawV2',
     partitionKey: {
       name: 'Reference Number',
@@ -74,7 +74,7 @@ export class DBStack extends cdk.Stack {
     },
     billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
     removalPolicy: cdk.RemovalPolicy.DESTROY, // change to RETAIN for production
-  });
+  }); */
 
 
    /*  this.RAWTRANSACtion = new dynamodb.Table(this, 'RawTransaTable', {
