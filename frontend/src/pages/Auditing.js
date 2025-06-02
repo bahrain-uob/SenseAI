@@ -27,6 +27,7 @@ const renderLabel = ({ percent }) => `${(percent * 100).toFixed(0)}%`;
 
 export default function Auditing() {
   const [allTransactions, setAllTransactions] = useState([]);
+  const [originalTransactions, setOriginalTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRisk, setSelectedRisk] = useState(null);
   const [fromDate, setFromDate] = useState('');
@@ -35,7 +36,7 @@ export default function Auditing() {
   const [currentPage, setCurrentPage] = useState(1);
   const transactionsPerPage = 20;
 
-  useEffect(() => {
+ /*  useEffect(() => {
     fetch("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/RawTransaction", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -62,9 +63,40 @@ export default function Auditing() {
       console.error("Error:", err);
       setLoading(false);
     });
-  }, []);
+  }, []); */
 
   useEffect(() => {
+  fetch("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/RawTransaction", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ limit: 20})
+  })
+  .then(res => res.json())
+  .then(data => {
+    const normalized = (data.items || []).map(item => ({
+      ...item,
+      risk: parseFloat(item.risk_percentage) || 0,
+      risk_category: getRiskCategory(parseFloat(item.risk_percentage) || 0),
+      id: `${item.rowid}`,
+      hs: item.HSCode || '',
+      weight: `${item["Net Weight"]} kg`,
+      value: `${item["Local Amount"]} BD`,
+      date: item["Registration Date"],
+      item_number: item["Item Number"] || 'N/A',
+      reference_number: item["Reference Number"] || 'N/A'
+    }));
+    setOriginalTransactions(normalized);
+    setAllTransactions(normalized);
+    setLoading(false);
+  })
+  .catch(err => {
+    console.error("Error:", err);
+    setLoading(false);
+  });
+}, []);
+
+
+/*   useEffect(() => {
   if (!fromDate && !toDate && !hsCode && !selectedRisk) return; // Avoid triggering on empty filters
 
   setLoading(true);
@@ -100,7 +132,51 @@ export default function Auditing() {
     console.error("❌ Filter fetch error:", err);
     setLoading(false);
   });
+}, [fromDate, toDate, hsCode, selectedRisk]); */
+
+useEffect(() => {
+  // If all filters are cleared, restore original data
+  if (!fromDate && !toDate && !hsCode && !selectedRisk) {
+    setAllTransactions(originalTransactions);
+    return;
+  }
+
+  // Otherwise, fetch filtered data from the server
+  setLoading(true);
+  fetch("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/RawTransaction", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      limit: 5000,
+      hsCode: hsCode || undefined,
+      riskLevel: selectedRisk || undefined,
+      fromDate: fromDate || undefined,
+      toDate: toDate || undefined
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const normalized = (data.items || []).map(item => ({
+      ...item,
+      risk: parseFloat(item.risk_percentage) || 0,
+      risk_category: getRiskCategory(parseFloat(item.risk_percentage) || 0),
+      id: `${item.rowid}`,
+      hs: item.HSCode || '',
+      weight: `${item["Net Weight"]} kg`,
+      value: `${item["Local Amount"]} BD`,
+      date: item["Registration Date"],
+      item_number: item["Item Number"] || 'N/A',
+      reference_number: item["Reference Number"] || 'N/A'
+    }));
+    setAllTransactions(normalized);
+    setLoading(false);
+  })
+  .catch(err => {
+    console.error("❌ Filter fetch error:", err);
+    setLoading(false);
+  });
 }, [fromDate, toDate, hsCode, selectedRisk]);
+
 
 /* {filteredTransactions.length === 0 && !loading && (
   <p style={{ color: "#888", marginTop: "1rem" }}>No matching transactions found.</p>
@@ -249,13 +325,12 @@ export default function Auditing() {
                 <thead>
                   <tr>
                     <th>Risk</th>
-                    <th>Transaction ID</th>
+                    <th>Reference Number</th>
+                    <th>Item Number</th>
                     <th>HS Code</th>
                     <th>Weight</th>
                     <th>Value</th>
                     <th>Date</th>
-                    <th>Item Number</th>
-                    <th>Reference Number</th>
                     <th>Review</th>
                   </tr>
                 </thead>
@@ -268,13 +343,12 @@ export default function Auditing() {
                     return (
                       <tr key={i} style={{ backgroundColor: rowBg }}>
                         <td><span className={`risk-badge ${getRiskClass(tx.risk)}`}>{tx.risk}%</span></td>
-                        <td>{tx.id}</td>
+                        <td>{tx.reference_number}</td>
+                        <td>{tx.item_number}</td>
                         <td>{tx.hs}</td>
                         <td>{tx.weight}</td>
                         <td>{tx.value}</td>
                         <td>{tx.date}</td>
-                        <td>{tx.item_number}</td>
-                        <td>{tx.reference_number}</td>
                         <td><Link to={`/pages/transaction/${tx.id}`}><FaEye className="review-icon" /></Link></td>
                       </tr>
                     );
