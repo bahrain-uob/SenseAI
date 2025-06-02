@@ -2,7 +2,7 @@ import boto3
 import json
 
 dynamodb = boto3.resource("dynamodb")
-table = dynamodb.Table("TransRawV2")  # Confirm table name if different
+table = dynamodb.Table("TransRawV3")  # Confirm table name if different
 
 def handler(event, context):
     try:

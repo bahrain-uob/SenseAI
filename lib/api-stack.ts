@@ -318,12 +318,12 @@ activities.addCorsPreflight({
         handler: 'getFromTransRaw.handler',
         code: lambda.Code.fromAsset('lambda'),
         environment: {
-          TABLE_NAME: dbStack.TransRawTable2.tableName,
+          TABLE_NAME: dbStack.TransRawTable3.tableName,
         },
       });
 
       // Grant Lambda read access to table
-      dbStack.TransRawTable2.grantReadData(getFromTransRawLambda);
+      dbStack.TransRawTable3.grantReadData(getFromTransRawLambda);
       
       // API Gateway resource
         const rawtrans = api.root.addResource("RawTransaction");
