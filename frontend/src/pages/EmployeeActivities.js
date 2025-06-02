@@ -11,46 +11,44 @@ const EmployeeActivities = () => {
   const [searchTransaction, setSearchTransaction] = useState('');
   const [dateFilter, setDateFilter] = useState('');
 
-  useEffect(() => {
-    const fetchActivities = async () => {
-      try {
-        const res = await axios.get('https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities');
+  const fetchActivities = async () => {
+    try {
+      const res = await axios.get('https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities');
 
-        const parsed = res.data.map((item) => {
-  const d = new Date(item.Timestamp); 
-  if (isNaN(d)) return null;
+      const parsed = res.data.map((item) => {
+        if (!item.Timestamp) return null;  // Ensure Timestamp exists
+        const d = new Date(item.Timestamp);
+        if (isNaN(d)) return null;
 
-  const [datePart, timePart] = d.toLocaleString().split(', ');
-  return {
-    date: datePart,
-    time: timePart,
-    employee: item.EmployeeName,
-    action: item.Action,
-    transaction: item.TransactionID,
+        const [datePart, timePart] = d.toLocaleString().split(', ');
+        return {
+          date: datePart,
+          time: timePart,
+          employee: item.EmployeeName,
+          action: item.Action,
+          transaction: item.TransactionID,
+          timestamp: item.Timestamp,
+        };
+      }).filter(Boolean);  // Remove null entries
+
+      setAllActivities(parsed);
+    } catch (err) {
+      console.error('Failed to fetch activities:', err);
+    }
   };
-}).filter(Boolean); // removes any null entries
 
-
-        setAllActivities(parsed);
-      } catch (err) {
-        console.error('Failed to fetch activities:', err);
-      }
-    };
-
+  useEffect(() => {
     fetchActivities();
   }, []);
 
   const filteredActivities = allActivities.filter((act) => {
-    const formattedActDate = new Date(`${act.date} ${act.time}`);
-    if (isNaN(formattedActDate)) return false;
-
-    const formattedFilterDate = new Date(dateFilter).toLocaleDateString();
-
+    const actDate = new Date(act.timestamp).toLocaleDateString();
+    const filterDate = dateFilter ? new Date(dateFilter).toLocaleDateString() : '';
     return (
-      (dateFilter === '' || formattedActDate.toLocaleDateString() === formattedFilterDate) &&
+      (dateFilter === '' || actDate === filterDate) &&
       (employeeFilter === 'All' || act.employee === employeeFilter) &&
       (actionFilter === 'All' || act.action === actionFilter) &&
-      (searchTransaction === '' || act.transaction.toLowerCase().includes(searchTransaction.toLowerCase()))
+      (searchTransaction === '' || act.transaction?.toLowerCase().includes(searchTransaction.toLowerCase()))
     );
   });
 
@@ -116,6 +114,11 @@ const EmployeeActivities = () => {
           <label>&nbsp;</label>
           <button className="export-btn" onClick={exportToCSV}>Export</button>
         </div>
+
+        <div className="filter-item">
+          <label>&nbsp;</label>
+          <button className="refresh-btn" onClick={fetchActivities}>🔄 Refresh</button>
+        </div>
       </div>
 
       <div className="activities-card">
@@ -158,4 +161,3 @@ const EmployeeActivities = () => {
 };
 
 export default EmployeeActivities;
-

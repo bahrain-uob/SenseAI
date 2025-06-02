@@ -35,3 +35,6 @@ Frontend Depndencies (by order)
 ----------> npm install axios
 ----------> npm install react-icons
 
+Dev#7-userActions 
+-----------> from dev#6 updated home.js 
+

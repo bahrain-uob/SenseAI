@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from "react";
 import "./TransactionDetail.css";
 import {
-  FaBoxOpen, FaGlobe, FaMoneyBill, FaBalanceScale,
-  FaChartLine, FaFileAlt, FaFlag, FaTrash, FaLock, FaClock
+  FaBoxOpen, FaGlobe, FaMoneyBill, FaFlag, FaTrash, FaClock
 } from "react-icons/fa";
 import axios from "axios";
+import { useParams } from 'react-router-dom';
+import { CognitoUserPool } from 'amazon-cognito-identity-js';
+
+const poolData = {
+  UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
+  ClientId: process.env.REACT_APP_COGNITO_CLIENT_ID,
+};
+const userPool = new CognitoUserPool(poolData);
 
 const TransactionDetail = () => {
+  const { trxId } = useParams();  // 🔥 Dynamic Transaction ID
+  const cognitoUser = userPool.getCurrentUser();
+  const userName = cognitoUser ? cognitoUser.getUsername() : 'Unknown';  // 🔥 Dynamic Username
+
   const [comment, setComment] = useState("");
   const [commentList, setCommentList] = useState([]);
   const [selectedAction, setSelectedAction] = useState("");
@@ -18,9 +29,6 @@ const TransactionDetail = () => {
   const [showNotFlaggedComment, setShowNotFlaggedComment] = useState(false);
   const [notFlaggedReason, setNotFlaggedReason] = useState("");
 
-  const userName = "Ahmed"; // Replace with logged-in user
-  const trxId = "TRX-2025000"; // Replace with your transaction ID
-
   const arabicActions = ["تعديل البيان", "تحويل الى الشؤون القانونية"];
   const errorTypes = ["السجل التجاري", "بند التعرفة", "أخطاء إحصائية", "مستندات ناقصة", "رسوم جمركية", "القيمة الجمركية"];
   const errorExplanations = ["ميناء الشحن", "قيمة البضاعة الجمركية", "تخفيض/خصم", "أجور الشحن", "وصف البضاعة", "منشأ البضاعة", "(سيل)ختم الجمارك", "الوزن", "CBM", "FOC", "العملة", "تصنيف البضاعة", "بطاقات المرور", "الفاتورة", "العدد", "رسوم شهادة المنشأ", "مبلغ التأمين غير مطابق", "رسوم الأشعة"];
@@ -28,7 +36,7 @@ const TransactionDetail = () => {
 
   const logAction = async (action, type = "", explanation = "", flager = "") => {
     try {
-      await axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities", {
+      await axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/log-employee-activity", {
         TransactionID: trxId,
         EmployeeName: userName,
         Action: action,
@@ -37,11 +45,15 @@ const TransactionDetail = () => {
         Flager: flager,
         Timestamp: new Date().toISOString(),
       });
-      console.log("Logged action:", action);
+      console.log("Logged action:", action, "for trx:", trxId);
     } catch (error) {
       console.error("Error logging activity:", error);
     }
   };
+
+  useEffect(() => {
+    logAction("Open");  // 🔥 Logs "Open" when page is loaded
+  }, []);
 
   const handleFlagSelect = (action) => {
     setSelectedAction(action);
@@ -72,15 +84,6 @@ const TransactionDetail = () => {
     setSelectedAction(logText);
     logAction(logText);
   };
-
-  useEffect(() => {
-    axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities", {
-      TransactionID: trxId,
-      Action: "Open",
-      EmployeeName: userName,
-      Timestamp: new Date().toISOString()
-    }).catch(console.error);
-  }, []);
 
   const handleCommentSubmit = () => {
     if (comment.trim()) {
@@ -238,6 +241,3 @@ const TransactionDetail = () => {
 };
 
 export default TransactionDetail;
-
-
-
