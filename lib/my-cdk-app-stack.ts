@@ -12,7 +12,7 @@ export class MyCdkStack extends cdk.Stack {
   public readonly TransactionUploadsBucket: s3.Bucket;
   public readonly uploadobjBucket: s3.Bucket; // i will check if it nescceary or not
 
-  constructor(scope: cdk.App, id: string, TransRawTable: dynamodb.Table,TransRawTable2: dynamodb.Table,props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, TransRawTable: dynamodb.Table,TransRawTable2: dynamodb.Table,TransRawTable3: dynamodb.Table,props?: cdk.StackProps) {
     super(scope, id, props);
 
 
@@ -34,11 +34,13 @@ export class MyCdkStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_18_X,
         handler: 'parseAndInsert.handler',
         timeout: cdk.Duration.minutes(5), // ✅ Increase to 30 seconds
-        memorySize: 4096, // (optional) Give more memory for faster processing
+        memorySize: 3000, // (optional) Give more memory for faster processing
         code: lambda.Code.fromAsset('lambda'), // folder with parseAndInsertLambda.js
         environment: {
            RAW_TABLE: TransRawTable.tableName,        // original
            RAW_V2_TABLE: TransRawTable2.tableName,
+           RAW_V3_TABLE: TransRawTable3.tableName,
+
         },
       });
        // ← INLINE POLICY: allow writes to your DynamoDB table Orignal*********
@@ -48,7 +50,8 @@ export class MyCdkStack extends cdk.Stack {
         'dynamodb:PutItem',
       ],
       resources: [
-        `arn:aws:dynamodb:${this.region}:${this.account}:table/${TransRawTable2.tableName}`
+        `arn:aws:dynamodb:${this.region}:${this.account}:table/${TransRawTable2.tableName}`,
+        `arn:aws:dynamodb:${this.region}:${this.account}:table/${TransRawTable3.tableName}`
       ],
     }));
 
@@ -58,6 +61,7 @@ export class MyCdkStack extends cdk.Stack {
       // 🔐 Grant DynamoDB write permission
       TransRawTable2.grantWriteData(parseAndInsertLambda);
       TransRawTable.grantWriteData(parseAndInsertLambda);
+      TransRawTable3.grantWriteData(parseAndInsertLambda);
 
 
 

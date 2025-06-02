@@ -2,7 +2,7 @@ import boto3
 
 # Initialize DynamoDB client
 dynamodb = boto3.resource("dynamodb")
-table = dynamodb.Table("TransRaw")
+table = dynamodb.Table("TransRawV2")
 
 def delete_all_items():
     print("Scanning for existing items...")
