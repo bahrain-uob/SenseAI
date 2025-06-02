@@ -324,10 +324,25 @@ activities.addCorsPreflight({
 
       // Grant Lambda read access to table
       dbStack.TransRawTable3.grantReadData(getFromTransRawLambda);
-      
+
+      // Define integration with CORS response headers
+      const rawTransactionIntegration = new apigateway.LambdaIntegration(getFromTransRawLambda, {
+        integrationResponses: [
+          {
+            statusCode: "200",
+            responseParameters: {
+              "method.response.header.Access-Control-Allow-Origin": "'*'",
+              "method.response.header.Access-Control-Allow-Headers": "'*'",
+              "method.response.header.Access-Control-Allow-Methods": "'*'",
+            },
+          },
+        ],
+        passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_MATCH,
+      });
+            
       // API Gateway resource
         const rawtrans = api.root.addResource("RawTransaction");
-        rawtrans.addMethod("GET", new apigateway.LambdaIntegration(getFromTransRawLambda), {
+        rawtrans.addMethod("GET", rawTransactionIntegration, {
           authorizationType: apigateway.AuthorizationType.NONE,
           methodResponses: [
             {
@@ -340,7 +355,7 @@ activities.addCorsPreflight({
             },
           ],
         });
-        rawtrans.addMethod("POST", new apigateway.LambdaIntegration(getFromTransRawLambda), {
+        rawtrans.addMethod("POST", rawTransactionIntegration, {
   authorizationType: apigateway.AuthorizationType.NONE,
   methodResponses: [
     {
@@ -351,12 +366,12 @@ activities.addCorsPreflight({
         "method.response.header.Access-Control-Allow-Methods": true,
       },
     },
-  ],
+  ],  
 });
 
         rawtrans.addCorsPreflight({
           allowOrigins: ["http://localhost:3000"],
-          allowMethods: ["GET", "OPTIONS","OPTIONS"],
+          allowMethods: ["GET", "OPTIONS","POST"],
         });
 
                     

@@ -39,7 +39,7 @@ export default function Auditing() {
     fetch("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/RawTransaction", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ limit: 150})
+      body: JSON.stringify({ limit: 20})
     })
     .then(res => res.json())
     .then(data => {
@@ -64,6 +64,49 @@ export default function Auditing() {
     });
   }, []);
 
+  useEffect(() => {
+  if (!fromDate && !toDate && !hsCode && !selectedRisk) return; // Avoid triggering on empty filters
+
+  setLoading(true);
+  fetch("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/RawTransaction", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      limit: 1000,
+      hsCode: hsCode || undefined,
+      riskLevel: selectedRisk || undefined,
+      fromDate: fromDate || undefined,
+      toDate: toDate || undefined
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const normalized = (data.items || []).map(item => ({
+      ...item,
+      risk: parseFloat(item.risk_percentage) || 0,
+      risk_category: getRiskCategory(parseFloat(item.risk_percentage) || 0),
+      id: `${item.rowid}`,
+      hs: item.HSCode || '',
+      weight: `${item["Net Weight"]} kg`,
+      value: `${item["Local Amount"]} BD`,
+      date: item["Registration Date"],
+      item_number: item["Item Number"] || 'N/A',
+      reference_number: item["Reference Number"] || 'N/A'
+    }));
+    setAllTransactions(normalized);
+    setLoading(false);
+  })
+  .catch(err => {
+    console.error("❌ Filter fetch error:", err);
+    setLoading(false);
+  });
+}, [fromDate, toDate, hsCode, selectedRisk]);
+
+/* {filteredTransactions.length === 0 && !loading && (
+  <p style={{ color: "#888", marginTop: "1rem" }}>No matching transactions found.</p>
+)} */
+
+
   const handleSliceClick = (_, index) => {
     const category = pieData[index].name;
     setSelectedRisk(prev => (prev === category ? null : category));
@@ -78,49 +121,6 @@ export default function Auditing() {
     const matchRisk = !selectedRisk || getRiskCategory(tx.risk) === selectedRisk;
     return matchDate && matchHS && matchRisk;
   });
-
-
-/*   // Add these state variables to manage dynamic fetching
-const [hasMore, setHasMore] = useState(true); // Flag to track if there are more transactions to fetch
-const [loadingMore, setLoadingMore] = useState(false); // Flag to avoid fetching multiple times
-
-// Define fetchMoreTransactions to fetch more data if needed
-const fetchMoreTransactions = () => {
-  if (loadingMore || !hasMore) return;  // Prevent fetching if already loading or no more data
-
-  setLoadingMore(true);
-
-  fetch("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/RawTransaction", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ limit: 20, page: currentPage + 1 })  // Fetch the next page
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.items && data.items.length > 0) {
-        setAllTransactions(prev => [...prev, ...data.items]);  // Append the new transactions to the existing ones
-        setCurrentPage(prev => prev + 1); // Increment current page for future fetches
-      } else {
-        setHasMore(false); // No more data to fetch
-      }
-      setLoadingMore(false);
-    })
-    .catch(err => {
-      console.error("❌ Error:", err);
-      setLoadingMore(false);
-    });
-};
-
-// Trigger dynamic fetching if no results match the current filter
-useEffect(() => {
-  // This ensures that if no matching results are found, more data will be fetched.
-  if (filteredTransactions.length === 0 && hasMore) {
-    fetchMoreTransactions(); // Fetch more transactions if no matches found
-  }
-}, [fromDate, toDate, hsCode, selectedRisk, filteredTransactions]);
- */
 
   const totalValue = filteredTransactions.reduce((sum, t) => sum + (parseFloat(t.value) || 0), 0);
   const highRiskCount = filteredTransactions.filter(t => t.risk >= 70).length;
