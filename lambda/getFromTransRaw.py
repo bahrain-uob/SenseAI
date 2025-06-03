@@ -43,6 +43,7 @@ def handler(event, context):
         }
  """
 
+
 import boto3
 import json
 from boto3.dynamodb.conditions import Attr

@@ -349,7 +349,11 @@ useEffect(() => {
                         <td>{tx.weight}</td>
                         <td>{tx.value}</td>
                         <td>{tx.date}</td>
-                        <td><Link to={`/pages/transaction/${tx.id}`}><FaEye className="review-icon" /></Link></td>
+                        <td>
+                          <Link to={`/pages/transaction/${tx.reference_number}/${tx.item_number}`}>
+                            <FaEye className="review-icon" />
+                          </Link>
+                        </td>
                       </tr>
                     );
                   })}
