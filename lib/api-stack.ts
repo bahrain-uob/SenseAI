@@ -312,22 +312,139 @@ activities.addCorsPreflight({
 });
 
 
+
+// Lambda function for RawTrans (noshaptable)
+const getFromTransRawLambda = new lambda.Function(this, 'GetFromTransRawLambda', {
+  runtime: lambda.Runtime.PYTHON_3_11,
+  handler: 'getFromTransRaw.handler',
+  code: lambda.Code.fromAsset('lambda'),
+  environment: {
+    TABLE_NAME: 'noshaptable',
+  },
+});
+
+getFromTransRawLambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:Scan'],
+  resources: [
+    'arn:aws:dynamodb:me-south-1:166555558375:table/noshaptable',
+  ],
+}));
+
+const rawTransactionIntegration = new apigateway.LambdaIntegration(getFromTransRawLambda, {
+  integrationResponses: [
+    {
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Headers": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'*'",
+      },
+    },
+  ],
+  passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_MATCH,
+});
+
+const rawtrans = api.root.addResource("RawTransaction");
+rawtrans.addMethod("GET", rawTransactionIntegration, {
+  authorizationType: apigateway.AuthorizationType.NONE,
+  methodResponses: [
+    {
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": true,
+        "method.response.header.Access-Control-Allow-Headers": true,
+        "method.response.header.Access-Control-Allow-Methods": true,
+      },
+    },
+  ],
+});
+rawtrans.addMethod("POST", rawTransactionIntegration, {
+  authorizationType: apigateway.AuthorizationType.NONE,
+  methodResponses: [
+    {
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": true,
+        "method.response.header.Access-Control-Allow-Headers": true,
+        "method.response.header.Access-Control-Allow-Methods": true,
+      },
+    },
+  ],
+});
+rawtrans.addCorsPreflight({
+  allowOrigins: ["http://localhost:3000"],
+  allowMethods: ["GET", "OPTIONS", "POST"],
+});
+
+
+// ✅ New Lambda function for ShapTransaction (99krows_only_scores_with_shap)
+const getFromShapLambda = new lambda.Function(this, 'GetFromShapLambda', {
+  runtime: lambda.Runtime.PYTHON_3_11,
+  handler: 'getFromTransRawShap.handler', // can reuse same code file
+  code: lambda.Code.fromAsset('lambda'),
+  environment: {
+    TABLE_NAME: '99krows_only_scores_with_shap',
+  },
+});
+
+getFromShapLambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:Scan'],
+  resources: [
+    'arn:aws:dynamodb:me-south-1:166555558375:table/99krows_only_scores_with_shap',
+  ],
+}));
+
+const shapTransactionIntegration = new apigateway.LambdaIntegration(getFromShapLambda, {
+  integrationResponses: [
+    {
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Headers": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'*'",
+      },
+    },
+  ],
+  passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_MATCH,
+});
+
+const shapTrans = api.root.addResource("ShapTransaction");
+
+shapTrans.addMethod("POST", shapTransactionIntegration, {
+  authorizationType: apigateway.AuthorizationType.NONE,
+  methodResponses: [
+    {
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": true,
+        "method.response.header.Access-Control-Allow-Headers": true,
+        "method.response.header.Access-Control-Allow-Methods": true,
+      },
+    },
+  ],
+});
+shapTrans.addCorsPreflight({
+  allowOrigins: ["http://localhost:3000"],
+  allowMethods: ["GET", "OPTIONS", "POST"],
+});
+
+
+/* 
       // Lambda function for RawTrans
       const getFromTransRawLambda = new lambda.Function(this, 'GetFromTransRawLambda', {
         runtime: lambda.Runtime.PYTHON_3_11,
         handler: 'getFromTransRaw.handler',
         code: lambda.Code.fromAsset('lambda'),
         environment: {
-          TABLE_NAME: '99krows_only_scores_with_shap',
+          TABLE_NAME: 'noshaptable',
         },
       });
 
-      // Grant Lambda read access to table
-      /* dbStack.TransRawTable3.grantReadData(getFromTransRawLambda); */
 
       getFromTransRawLambda.addToRolePolicy(new iam.PolicyStatement({
   actions: ['dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:Scan'],
-  resources: ['arn:aws:dynamodb:me-south-1:166555558375:table/99krows_only_scores_with_shap'],
+  resources: ['arn:aws:dynamodb:me-south-1:166555558375:table/noshaptable',
+            'arn:aws:dynamodb:me-south-1:166555558375:table/99krows_only_scores_with_shap',],
 }));
 
 
@@ -379,6 +496,41 @@ activities.addCorsPreflight({
           allowOrigins: ["http://localhost:3000"],
           allowMethods: ["GET", "OPTIONS","POST"],
         });
+
+// Create additional endpoint using the same Lambda
+const shapTrans = api.root.addResource("ShapTransaction");
+
+shapTrans.addMethod("POST", new apigateway.LambdaIntegration(getFromTransRawLambda, {
+  integrationResponses: [
+    {
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Headers": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'*'",
+      },
+    },
+  ],
+  passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_MATCH,
+}), {
+  authorizationType: apigateway.AuthorizationType.NONE,
+  methodResponses: [
+    {
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": true,
+        "method.response.header.Access-Control-Allow-Headers": true,
+        "method.response.header.Access-Control-Allow-Methods": true,
+      },
+    },
+  ],
+});
+
+shapTrans.addCorsPreflight({
+  allowOrigins: ["http://localhost:3000"],
+  allowMethods: ["GET", "OPTIONS", "POST"],
+});
+ */
 
                     
         

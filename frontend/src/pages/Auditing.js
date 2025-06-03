@@ -29,11 +29,14 @@ export default function Auditing() {
   const [allTransactions, setAllTransactions] = useState([]);
   const [originalTransactions, setOriginalTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRisk, setSelectedRisk] = useState(null);
+  const [selectedRisk, setSelectedRisk] = useState("");
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [hsCode, setHsCode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [referenceNumber, setReferenceNumber] = useState('');
+  const [searchTriggered, setSearchTriggered] = useState(false);
+
   const transactionsPerPage = 20;
 
  /*  useEffect(() => {
@@ -69,7 +72,7 @@ export default function Auditing() {
   fetch("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/RawTransaction", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ limit: 20})
+    body: JSON.stringify({ limit: 300 })
   })
   .then(res => res.json())
   .then(data => { 
@@ -136,7 +139,7 @@ export default function Auditing() {
 
 useEffect(() => {
   // If all filters are cleared, restore original data
-  if (!fromDate && !toDate && !hsCode && !selectedRisk) {
+  if (!searchTriggered && !fromDate && !toDate && !hsCode && !selectedRisk && !referenceNumber) {
     setAllTransactions(originalTransactions);
     return;
   }
@@ -147,11 +150,12 @@ useEffect(() => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      limit: 100,
+      limit: 7000,
       hsCode: hsCode || undefined,
       riskLevel: selectedRisk || undefined,
       fromDate: fromDate || undefined,
-      toDate: toDate || undefined
+      toDate: toDate || undefined,
+      referenceNumber: referenceNumber || undefined
     })
   })
   .then(res => res.json())
@@ -170,12 +174,14 @@ useEffect(() => {
     }));
     setAllTransactions(normalized);
     setLoading(false);
+     setSearchTriggered(false);
   })
   .catch(err => {
     console.error("❌ Filter fetch error:", err);
     setLoading(false);
+     setSearchTriggered(false);
   });
-}, [fromDate, toDate, hsCode, selectedRisk]);
+}, [fromDate, toDate, hsCode, selectedRisk,referenceNumber,searchTriggered]);
 
 
 /* {filteredTransactions.length === 0 && !loading && (
@@ -195,7 +201,8 @@ useEffect(() => {
     const matchDate = (!from || txDate >= from) && (!to || txDate <= to);
     const matchHS = hsCode === '' || tx.hs.toLowerCase().includes(hsCode.toLowerCase());
     const matchRisk = !selectedRisk || getRiskCategory(tx.risk) === selectedRisk;
-    return matchDate && matchHS && matchRisk;
+    const matchRef = referenceNumber === '' || tx.reference_number.toLowerCase().includes(referenceNumber.toLowerCase());
+    return matchDate && matchHS && matchRisk && matchRef;
   });
 
   const totalValue = filteredTransactions.reduce((sum, t) => sum + (parseFloat(t.value) || 0), 0);
@@ -210,7 +217,10 @@ useEffect(() => {
 
   const indexOfLast = currentPage * transactionsPerPage;
   const indexOfFirst = indexOfLast - transactionsPerPage;
-  const currentTransactions = filteredTransactions.slice(indexOfFirst, indexOfLast);
+  /* const currentTransactions = filteredTransactions.slice(indexOfFirst, indexOfLast); */
+  const currentTransactions = [...filteredTransactions]
+  .sort((a, b) => b.risk - a.risk)
+  .slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
   const goToPage = (page) => {
@@ -290,7 +300,7 @@ useEffect(() => {
               <label style={{ marginBottom: '6px' }}>HS Code Search</label>
               <input type="text" placeholder="Enter HS code" value={hsCode} onChange={(e) => setHsCode(e.target.value)} style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc', minWidth: '200px' }} />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', color: '#0b1743', fontWeight: 600, fontSize: '14px' }}>
+            {/* <div style={{ display: 'flex', flexDirection: 'column', color: '#0b1743', fontWeight: 600, fontSize: '14px' }}>
               <label style={{ marginBottom: '6px' }}>Risk Level</label>
               <select value={selectedRisk || ''} onChange={(e) => setSelectedRisk(e.target.value || null)} style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc' }}>
                 <option value=''>All Risks</option>
@@ -299,7 +309,29 @@ useEffect(() => {
                 <option value='Medium'>Medium</option>
                 <option value='Low'>Low</option>
               </select>
-            </div>
+            </div> */}
+
+          {/* <div style={{ display: 'flex', flexDirection: 'column', color: '#0b1743', fontWeight: 600, fontSize: '14px' }}>
+              <label style={{ marginBottom: '6px' }}>Reference Number</label>
+              <input
+                    type="text"
+                    placeholder="Enter reference number"
+                    value={referenceNumber}
+                    onChange={(e) => setReferenceNumber(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setSearchTriggered(true);
+                      }
+                    }}
+                    style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc', minWidth: '200px' }}
+                  />
+           </div>  */}
+
+
+
+
+        
+
           </div>
 
           
@@ -349,7 +381,10 @@ useEffect(() => {
                         <td>{tx.weight}</td>
                         <td>{tx.value}</td>
                         <td>{tx.date}</td>
-                        <td><Link to={`/pages/transaction/${tx.id}`}><FaEye className="review-icon" /></Link></td>
+                        <td>
+                        <Link to={`/pages/transaction/${tx.reference_number}/${tx.item_number}`}>
+                            <FaEye className="review-icon" />
+                        </Link></td>
                       </tr>
                     );
                   })}
