@@ -1,8 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './EmployeeActivities.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { amiriFontBase64 } from '../fonts/Amiri-Regular-base64'; // Base64 import
+
+// Initialize pdfMake with Amiri font
+pdfMake.vfs = {
+  ...pdfFonts.vfs,
+  'Amiri-Regular.ttf': amiriFontBase64
+};
+
+pdfMake.fonts = {
+  ...pdfMake.fonts,
+  Amiri: {
+    normal: 'Amiri-Regular.ttf',
+    bold: 'Amiri-Regular.ttf',
+    italics: 'Amiri-Regular.ttf',
+    bolditalics: 'Amiri-Regular.ttf'
+  }
+};
 
 const EmployeeActivities = () => {
   const [allActivities, setAllActivities] = useState([]);
@@ -10,16 +29,19 @@ const EmployeeActivities = () => {
   const [actionFilter, setActionFilter] = useState('All');
   const [searchTransaction, setSearchTransaction] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const chartRef = useRef(null);
+
+  useEffect(() => {
+    fetchActivities();
+  }, []);
 
   const fetchActivities = async () => {
     try {
       const res = await axios.get('https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities');
-
       const parsed = res.data.map((item) => {
-        if (!item.Timestamp) return null;  // Ensure Timestamp exists
+        if (!item.Timestamp) return null;
         const d = new Date(item.Timestamp);
         if (isNaN(d)) return null;
-
         const [datePart, timePart] = d.toLocaleString().split(', ');
         return {
           date: datePart,
@@ -29,17 +51,12 @@ const EmployeeActivities = () => {
           transaction: item.TransactionID,
           timestamp: item.Timestamp,
         };
-      }).filter(Boolean);  // Remove null entries
-
+      }).filter(Boolean);
       setAllActivities(parsed);
     } catch (err) {
       console.error('Failed to fetch activities:', err);
     }
   };
-
-  useEffect(() => {
-    fetchActivities();
-  }, []);
 
   const filteredActivities = allActivities.filter((act) => {
     const actDate = new Date(act.timestamp).toLocaleDateString();
@@ -55,104 +72,98 @@ const EmployeeActivities = () => {
   const uniqueEmployees = [...new Set(allActivities.map(act => act.employee))];
   const uniqueActions = [...new Set(allActivities.map(act => act.action))];
 
-  const exportToCSV = () => {
-    const headers = ['Date', 'Time', 'Employee', 'Action', 'Transaction'];
-    const rows = filteredActivities.map(a => [a.date, a.time, a.employee, a.action, a.transaction]);
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].map(e => e.join(',')).join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', 'employee_activities.csv');
-    document.body.appendChild(link);
-    link.click();
+  const exportToPDF = () => {
+    const docDefinition = {
+      defaultStyle: { font: 'Amiri', fontSize: 10 },
+      content: [
+        { text: 'تقرير أنشطة الموظف', style: 'header' },
+        { text: `Generated on: ${new Date().toLocaleString()}`, style: 'subheader' },
+        { text: '\n\n' },
+        {
+          table: {
+            headerRows: 1,
+            widths: ['*', '*', '*', '*'],
+            body: [
+              [
+                { text: 'Date', style: 'tableHeader' },
+                { text: 'Employee', style: 'tableHeader' },
+                { text: 'Action', style: 'tableHeader' },
+                { text: 'Transaction', style: 'tableHeader' },
+              ],
+              ...filteredActivities.map(a => [
+                { text: a.date },
+                { text: a.employee, alignment: /[\u0600-\u06FF]/.test(a.employee) ? 'right' : 'left' },
+                { text: a.action, alignment: /[\u0600-\u06FF]/.test(a.action) ? 'right' : 'left' },
+                { text: a.transaction || 'N/A' }
+              ]),
+            ],
+          },
+          layout: {
+            fillColor: (rowIndex) => (rowIndex === 0 ? '#2E86C1' : rowIndex % 2 === 0 ? '#F9F9F9' : null),
+            textColor: (rowIndex) => (rowIndex === 0 ? 'white' : 'black'),
+            hLineWidth: () => 0.5,
+            vLineWidth: () => 0.5,
+            paddingLeft: () => 5,
+            paddingRight: () => 5,
+            paddingTop: () => 3,
+            paddingBottom: () => 3,
+          },
+        },
+      ],
+      styles: {
+        header: { fontSize: 24, bold: true, alignment: 'center', margin: [0, 0, 0, 10], color: '#2E86C1' },
+        subheader: { fontSize: 12, italics: true, alignment: 'center', margin: [0, 0, 0, 10] },
+        tableHeader: { bold: true, color: 'white', fillColor: '#2E86C1', fontSize: 12, alignment: 'center' },
+      },
+      pageMargins: [30, 40, 30, 40],
+    };
+    pdfMake.createPdf(docDefinition).open();
   };
 
   return (
     <div className="activities-wrapper">
       <h2>Employee Activities</h2>
-
       <div className="filters-row">
         <div className="filter-item">
-          <label htmlFor="date-filter">Date</label>
-          <input
-            id="date-filter"
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="date-input"
-          />
+          <label>Date</label>
+          <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
         </div>
-
         <div className="filter-item">
           <label>Employee</label>
           <select value={employeeFilter} onChange={(e) => setEmployeeFilter(e.target.value)}>
             <option>All</option>
-            {uniqueEmployees.map((emp, i) => <option key={`${emp}-${i}`}>{emp}</option>)}
+            {uniqueEmployees.map((emp, i) => <option key={i}>{emp}</option>)}
           </select>
         </div>
-
         <div className="filter-item">
           <label>Action</label>
           <select value={actionFilter} onChange={(e) => setActionFilter(e.target.value)}>
             <option>All</option>
-            {uniqueActions.map((action, i) => <option key={`${action}-${i}`}>{action}</option>)}
+            {uniqueActions.map((act, i) => <option key={i}>{act}</option>)}
           </select>
         </div>
-
         <div className="filter-item">
           <label>Transaction</label>
-          <input
-            type="text"
-            placeholder="Search by transaction..."
-            value={searchTransaction}
-            onChange={(e) => setSearchTransaction(e.target.value)}
-            className="search-transaction-input"
-          />
+          <input type="text" placeholder="Search by transaction" value={searchTransaction} onChange={(e) => setSearchTransaction(e.target.value)} />
         </div>
-
         <div className="filter-item">
-          <label>&nbsp;</label>
-          <button className="export-btn" onClick={exportToCSV}>Export</button>
-        </div>
-
-        <div className="filter-item">
-          <label>&nbsp;</label>
-          <button className="refresh-btn" onClick={fetchActivities}>🔄 Refresh</button>
+          <button className="export-btn" onClick={exportToPDF}>📄 Generate PDF</button>
         </div>
       </div>
-
       <div className="activities-card">
         <table className="activities-table">
           <thead>
-            <tr>
-              <th>Date</th>
-              <th>Employee</th>
-              <th>Action</th>
-              <th>Transaction</th>
-            </tr>
+            <tr><th>Date</th><th>Employee</th><th>Action</th><th>Transaction</th></tr>
           </thead>
           <tbody>
-            {filteredActivities.length === 0 ? (
-              <tr>
-                <td colSpan="4" style={{ textAlign: 'center', padding: '1rem' }}>
-                  No activities found.
-                </td>
+            {filteredActivities.map((act, idx) => (
+              <tr key={idx}>
+                <td>{act.date}<br /><small>{act.time}</small></td>
+                <td><FontAwesomeIcon icon={faUserCircle} /> {act.employee}</td>
+                <td>{act.action}</td>
+                <td>{act.transaction}</td>
               </tr>
-            ) : (
-              filteredActivities.map((act, index) => (
-                <tr key={index}>
-                  <td>{act.date}<br /><small>{act.time}</small></td>
-                  <td>
-                    <div className="employee-info">
-                      <FontAwesomeIcon icon={faUserCircle} size="lg" />
-                      <span>{act.employee}</span>
-                    </div>
-                  </td>
-                  <td>{act.action}</td>
-                  <td>{act.transaction}</td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>

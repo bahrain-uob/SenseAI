@@ -95,3 +95,16 @@
   background-color: #060640;
   color: white;
 }
+.export-btn {
+  background-color: #c8a13d;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.export-btn:hover {
+  background-color: #af8e31;
+}

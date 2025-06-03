@@ -7,16 +7,28 @@ import axios from "axios";
 import { useParams } from 'react-router-dom';
 import { CognitoUserPool } from 'amazon-cognito-identity-js';
 
-const poolData = {
-  UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
-  ClientId: process.env.REACT_APP_COGNITO_CLIENT_ID,
-};
-const userPool = new CognitoUserPool(poolData);
+import { poolData } from '../awsConfig.js'
 
 const TransactionDetail = () => {
   const { trxId } = useParams();  // 🔥 Dynamic Transaction ID
-  const cognitoUser = userPool.getCurrentUser();
-  const userName = cognitoUser ? cognitoUser.getUsername() : 'Unknown';  // 🔥 Dynamic Username
+  const cognitoUser = poolData.getCurrentUser();
+  let userName = 'Unknown';
+if (cognitoUser) {
+  cognitoUser.getSession((err, session) => {
+    if (!err) {
+      cognitoUser.getUserAttributes((err, attributes) => {
+        if (!err) {
+          const emailAttr = attributes.find(attr => attr.getName() === 'email');
+          const email = emailAttr ? emailAttr.getValue() : 'unknown@example.com';
+          userName = email.split(/[@.]/)[0];
+          console.log('User name extracted from email:', userName);
+        }
+      });
+    }
+  });
+}
+
+  
 
   const [comment, setComment] = useState("");
   const [commentList, setCommentList] = useState([]);
@@ -36,7 +48,7 @@ const TransactionDetail = () => {
 
   const logAction = async (action, type = "", explanation = "", flager = "") => {
     try {
-      await axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/log-employee-activity", {
+      await axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities", {
         TransactionID: trxId,
         EmployeeName: userName,
         Action: action,
