@@ -12,10 +12,14 @@ def handler(event, context):
         print("Received body:", body)
 
         item = {
-            'TransactionID': body.get('TransactionID', 'unknown'),
+            'reference_number': body.get('reference_number', 'unknown'),
+            'item_number': body.get('item_number', 'unknown'),
             'EmployeeName': body.get('EmployeeName', 'unknown'),
             'Action': body.get('Action', 'view'),
-            'Timestamp': body.get('Timestamp', datetime.utcnow().isoformat())
+            'Timestamp': body.get('Timestamp', datetime.utcnow().isoformat()),
+            'TypeOfError': body.get('TypeOfError', ''),
+            'ErrorExplanation': body.get('ErrorExplanation', ''),
+            'Flager': body.get('Flager', '')
         }
 
         table.put_item(Item=item)
@@ -23,10 +27,10 @@ def handler(event, context):
         return {
             "statusCode": 200,
             "headers": {
-                "Access-Control-Allow-Origin": "*",  
-                "Access-Control-Allow-Headers": "*", 
-                "Access-Control-Allow-Methods": "*", 
-                "Content-Type": "application/json"   
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "*",
+                "Access-Control-Allow-Methods": "*",
+                "Content-Type": "application/json"
             },
             "body": json.dumps({"message": "Activity logged successfully"})
         }

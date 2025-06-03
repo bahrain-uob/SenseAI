@@ -48,7 +48,8 @@ const EmployeeActivities = () => {
           time: timePart,
           employee: item.EmployeeName,
           action: item.Action,
-          transaction: item.TransactionID,
+          transaction: item["Reference Number"],
+          itemNo: item["Item Number"], //changed!!!!!
           timestamp: item.Timestamp,
         };
       }).filter(Boolean);

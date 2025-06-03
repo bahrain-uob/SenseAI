@@ -40,7 +40,7 @@ function App() {
                   <Route path="/pages/landport" element={<Land />} />
                   <Route path="/pages/seaport" element={<Sea />} />
                   <Route path="/pages/allports" element={<AllPorts />} />
-                  <Route path="/pages/transaction/:id" element={<TransactionDetail />} />
+                  <Route path="/pages/transaction/:referenceNumber/:itemNumber" element={<TransactionDetail />} />
 
 
                 </Routes>

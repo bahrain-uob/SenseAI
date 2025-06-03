@@ -64,41 +64,46 @@
 
 .transaction-actions {
   display: flex;
-  align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 1rem;
   margin: 20px 0;
+  direction: rtl;
 }
 
 .status-label {
   font-weight: bold;
-  margin-right: 8px;
   color: #0b1743;
+  font-size: 16px;
 }
 
 .action-btn {
-  padding: 10px 18px;
-  font-weight: 600;
+  padding: 12px 24px;
+  font-weight: bold;
   font-size: 14px;
-  border-radius: 6px;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
-  background-color: #e0e0e0;
-  color: #333;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   transition: all 0.3s ease;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
 }
 
 .action-btn.flag {
-  background-color: red;
-  color: #fff;
+  background-color: #F8F8FF;
+  color: #0b1743;
 }
 
 .action-btn.pending {
-  background-color: #ffa500;
-  color: white;
+  background-color: #F8F8FF;
+  color: #0b1743;
+}
+
+.action-btn.not-flagged {
+  background-color: #F8F8FF;
+  color: #0b1743;
 }
 
 .action-btn.close {
@@ -107,7 +112,9 @@
 }
 
 .action-btn:hover {
-  opacity: 0.85;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+  opacity: 0.9;
 }
 
 .flag-container {
@@ -139,181 +146,35 @@
 }
 
 .selected-action {
-  font-weight: bold;
-  color: #333;
-  margin-top: 10px;
+  background-color: #F8F8FF;
+  color: #0b1743;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: fadeSlideIn 0.5s forwards;
+}
+
+@keyframes fadeSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .flag-details {
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
-  padding: 1rem;
-  margin-top: 1rem;
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: space-between;
-}
-
-.flag-details label {
-  font-weight: bold;
-  margin-bottom: 0.3rem;
-  display: block;
-  color: #0b1743;
-}
-
-.flag-details select {
-  padding: 8px 12px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  min-width: 180px;
-}
-
-.submit-log {
-  background-color: #0b1743;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-.submit-log:hover {
-  background-color: #1a2d66;
-}
-
-/* Comment Section */
-.comment-section {
-  background: white;
-  border: 1px solid #e5e7eb;
-  padding: 1.5rem;
-  border-radius: 6px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.04);
-  margin-top: 2rem;
-}
-
-.comment-section h3 {
-  font-size: 16px;
-  margin-bottom: 0.75rem;
-  font-weight: bold;
-  color: #0b1743;
-}
-
-.comment-input {
-  width: 100%;
-  min-height: 100px;
-  padding: 12px 16px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  resize: vertical;
-  margin-bottom: 1rem;
-  box-sizing: border-box;
-}
-
-.submit-comment {
-  background-color: #0b1743;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-.submit-comment:hover {
-  background-color: #1a2d66;
-}
-
-.submitted-comments ul {
-  list-style: none;
-  padding-left: 0;
-}
-
-.submitted-comments li {
-  font-size: 14px;
-  color: #444;
-  margin-bottom: 0.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.delete-comment {
-  background: none;
-  border: none;
-  color: #b71c1c;
-  cursor: pointer;
-  margin-left: 10px;
-  font-size: 14px;
-}
-.transaction-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin: 20px 0;
-  direction: rtl; /* Arabic Right-to-Left */
-}
-
-.action-btn {
-  padding: 12px 24px;
-  font-weight: bold;
-  font-size: 14px;
-  border-radius: 12px; /* More rounded */
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-}
-
-.action-btn.flag {
-  background-color: #ff3b30;
-  color: white;
-}
-
-.action-btn.pending {
-  background-color: #ff9500;
-  color: white;
-}
-
-.action-btn.close {
-  background-color: #333;
-  color: white;
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(0,0,0,0.15);
-  opacity: 0.9;
-}
-
-.status-label {
-  font-weight: bold;
-  color: #0b1743;
-  margin-left: 8px;
-  font-size: 16px;
-}
-
-.flag-details {
-  background-color: #f9f9f9;
+  background-color: white;
   border: 1px solid #ddd;
   padding: 1rem;
-  border-radius: 8px;
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
   direction: rtl;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 20px;
 }
 
 .flag-details select, .flag-details button {
@@ -337,34 +198,6 @@
 .submit-log:hover {
   background-color: #1a2d66;
 }
-.transaction-actions {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin: 20px 0;
-  direction: rtl;
-}
-
-.action-btn {
-  padding: 12px 20px;
-  font-weight: bold;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-}
-
-.action-btn.flag { background-color: #f44336; color: white; }
-.action-btn.pending { background-color: #ff9800; color: white; }
-.action-btn.not-flagged { background-color: #4caf50; color: white; }
-.action-btn.close { background-color: #333; color: white; }
-
-.action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(0,0,0,0.15);
-}
 
 .not-flagged-comment {
   background: #f9f9f9;
@@ -387,18 +220,121 @@
   margin-bottom: 0.5rem;
 }
 
-.submit-log {
-  background-color: #0b1743;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
 .error-msg {
   color: red;
   font-size: 13px;
   margin-bottom: 0.5rem;
+}
+
+.report-modal {
+  position: fixed;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  max-height: 80%;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  z-index: 9999; /* Ensure visibility */
+  overflow-y: auto;
+  border: 3px solid red; /* Optional: Debug border to see it */
+}
+
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.report-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.report-header button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.report-table th, .report-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: right;
+}
+
+.report-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.report-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.report-buttons button {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.report-buttons button:hover {
+  background-color: #0056b3;
+}
+
+body.modal-open {
+  background-color: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+@media print {
+  body {
+    direction: rtl;
+    font-family: 'Amiri', serif; /* Use an Arabic font if available */
+  }
+
+  .report-container {
+    padding: 0;
+    margin: 0;
+    background: white;
+    box-shadow: none;
+  }
+
+  .no-print {
+    display: none; /* Hide elements like buttons during print */
+  }
+
+  .report-title {
+    font-size: 24px;
+    color: black;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: right;
+  }
 }
