@@ -27,13 +27,15 @@ const HomePage = ({ children }) => {
   const location = useLocation();
   const { t } = useTranslation();
 
+   const isBotPage = location.pathname === '/pages/Chatbot';
+
   useEffect(() => {
     const saved = localStorage.getItem("chat-mini-history");
     if (saved) {
       setMiniChatMessages(JSON.parse(saved));
     }
   }, []);
-  
+
   // Save history every time it changes
   useEffect(() => {
     localStorage.setItem("chat-mini-history", JSON.stringify(miniChatMessages));
@@ -50,6 +52,7 @@ const HomePage = ({ children }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  
 
   const handleMiniSend = async () => {
     const input = miniInput.trim();
@@ -81,7 +84,6 @@ const HomePage = ({ children }) => {
       setMiniTyping(false);
     }
   };
- 
   return (
     <div style={styles.wrapper}>
 
@@ -202,76 +204,76 @@ const HomePage = ({ children }) => {
       {/* Footer */}
       <footer style={styles.footer}></footer>
 
-      {/* Floating Chatbot Button */}
-      <div
-  className="chatbot-button"
-  onClick={() => setChatOpen(!chatOpen)}
->
-  <FaRobot style={{ marginRight: '6px' }} />
-  {t('customsBot')}
-  <span style={{ marginLeft: '4px' }}>
-    {chatOpen ? <FaAngleDown /> : <FaAngleUp />}
-  </span>
-</div>
-
-{chatOpen && (
-  <div className="chat-panel">
-
-    <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '6px 10px' }}>
-  <button
-    onClick={() => {
-      const fresh = [{ text: 'Hello! How can I help you today?', sender: 'bot' }];
-      setMiniChatMessages(fresh);
-      localStorage.setItem("chat-mini-history", JSON.stringify(fresh));
-    }}
-    style={{
-      backgroundColor: '#eee',
-      border: 'none',
-      borderRadius: '12px',
-      padding: '4px 10px',
-      cursor: 'pointer',
-      fontSize: '12px',
-      fontWeight: 'bold'
-    }}
-  >
-    + New Chat
-  </button>
-</div>
-
-    <div className="chat-header">{t('customsBot')}</div>
-
-    <div className="chat-messages">
-      {miniChatMessages.map((msg, idx) => (
-        <div
-          key={idx}
-          className={`message-bubble ${msg.sender === 'bot' ? 'bot-message' : 'user-message'}`}
-        >
-          {msg.text}
-        </div>
-      ))}
-      {miniTyping && (
-        <div className="message-bubble bot-message">
-          <span className="dot"></span>
-          <span className="dot"></span>
-          <span className="dot"></span>
-        </div>
-      )}
-    </div>
-
-    <div className="chat-input-area">
-      <input
-        type="text"
-        placeholder={t('messege')}
-        className="chat-input"
-        value={miniInput}
-        onChange={(e) => setMiniInput(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && handleMiniSend()}
-      />
-      <button className="chat-send" onClick={handleMiniSend}>
-        {t('send')}
-      </button>
+       {/* Floating Chatbot Button & Chat Panel - Hidden on Bot Page */}
+      {!isBotPage && (
+        <>
+          <div
+            className="chatbot-button"
+            onClick={() => setChatOpen(!chatOpen)}
+          >
+            <FaRobot style={{ marginRight: '6px' }} />
+            {t('customsBot')}
+            <span style={{ marginLeft: '4px' }}>
+              {chatOpen ? <FaAngleDown /> : <FaAngleUp />}
+            </span>
           </div>
-        </div>
+
+          {chatOpen && (
+            <div className="chat-panel">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '6px 10px' }}>
+                <button
+                  onClick={() => {
+                    const fresh = [{ text: 'Hello! How can I help you today?', sender: 'bot' }];
+                    setMiniChatMessages(fresh);
+                    localStorage.setItem("chat-mini-history", JSON.stringify(fresh));
+                  }}
+                  style={{
+                    backgroundColor: '#eee',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '4px 10px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  + New Chat
+                </button>
+              </div>
+              <div className="chat-header">{t('customsBot')}</div>
+              <div className="chat-messages">
+                {miniChatMessages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`message-bubble ${msg.sender === 'bot' ? 'bot-message' : 'user-message'}`}
+                  >
+                    {msg.text}
+                  </div>
+                ))}
+                {miniTyping && (
+                  <div className="message-bubble bot-message">
+                    <span className="dot"></span>
+                    <span className="dot"></span>
+                    <span className="dot"></span>
+                  </div>
+                )}
+              </div>
+              <div className="chat-input-area">
+                <input
+                  type="text"
+                  placeholder={t('messege')}
+                  className="chat-input"
+                  value={miniInput}
+                  onChange={(e) => setMiniInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleMiniSend()}
+                />
+                <button className="chat-send" onClick={handleMiniSend}>
+                  {t('send')}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
