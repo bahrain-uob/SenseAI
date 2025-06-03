@@ -10,16 +10,16 @@ import { Link } from 'react-router-dom';
 
 const getRiskClass = (risk) => {
   if (risk >= 90) return 'risk-critical';
-  if (risk >= 70) return 'risk-high';
-  if (risk >= 40) return 'risk-medium';
-  return 'risk-low';
+  else if (risk >= 70) return 'risk-high';
+  else if (risk >= 40) return 'risk-medium';
+  else return 'risk-low';
 };
 
-const getRiskCategory = (risk) => {
-  if (risk >= 90) return 'Critical';
-  if (risk >= 70) return 'High';
-  if (risk >= 40) return 'Medium';
-  return 'Low';
+const getRiskCategory = (score) => {
+  if (score >= 90) return 'Critical';
+  else if (score >= 70) return 'High';
+  else if (score >= 40) return 'Medium';
+  else return 'Low';
 };
 
 const COLORS = ['#dc2626', '#f97316', '#facc15', '#4ade80'];
@@ -139,11 +139,12 @@ export default function Auditing() {
 
 useEffect(() => {
   // If all filters are cleared, restore original data
-  if (!searchTriggered && !fromDate && !toDate && !hsCode && !selectedRisk && !referenceNumber) {
+  if (!searchTriggered && !fromDate && !toDate && !hsCode && !referenceNumber) { //&& !selectedRisk 
     setAllTransactions(originalTransactions);
+    console.log("using original data")
     return;
   }
-
+console.log("fetching new data")
   // Otherwise, fetch filtered data from the server
   setLoading(true);
   fetch("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/RawTransaction", {
@@ -152,7 +153,7 @@ useEffect(() => {
     body: JSON.stringify({
       limit: 7000,
       hsCode: hsCode || undefined,
-      riskLevel: selectedRisk || undefined,
+      //riskLevel: selectedRisk || undefined,
       fromDate: fromDate || undefined,
       toDate: toDate || undefined,
       referenceNumber: referenceNumber || undefined
@@ -181,7 +182,7 @@ useEffect(() => {
     setLoading(false);
      setSearchTriggered(false);
   });
-}, [fromDate, toDate, hsCode, selectedRisk,referenceNumber,searchTriggered]);
+}, [fromDate, toDate, hsCode,referenceNumber,searchTriggered]); //selectedRisk
 
 
 /* {filteredTransactions.length === 0 && !loading && (
@@ -194,26 +195,32 @@ useEffect(() => {
     setSelectedRisk(prev => (prev === category ? null : category));
   };
 
-  const filteredTransactions = allTransactions.filter(tx => {
-    const txDate = new Date(tx.date);
-    const from = fromDate ? new Date(fromDate) : null;
-    const to = toDate ? new Date(toDate) : null;
-    const matchDate = (!from || txDate >= from) && (!to || txDate <= to);
-    const matchHS = hsCode === '' || tx.hs.toLowerCase().includes(hsCode.toLowerCase());
-    const matchRisk = !selectedRisk || getRiskCategory(tx.risk) === selectedRisk;
-    const matchRef = referenceNumber === '' || tx.reference_number.toLowerCase().includes(referenceNumber.toLowerCase());
-    return matchDate && matchHS && matchRisk && matchRef;
-  });
+const filteredTransactions = allTransactions.filter(tx => {
+  const txDate = new Date(tx.date);
+  const from = fromDate ? new Date(fromDate) : null;
+  const to = toDate ? new Date(toDate) : null;
+  const matchDate = (!from || txDate >= from) && (!to || txDate <= to);
+  const matchHS = hsCode === '' || tx.hs.toLowerCase().includes(hsCode.toLowerCase());
+  const matchRisk = !selectedRisk || tx.risk_category === selectedRisk;
+  const matchRef = referenceNumber === '' || tx.reference_number.toLowerCase().includes(referenceNumber.toLowerCase());
+  return matchDate && matchHS && matchRisk && matchRef;
+});
+
+//console.log('Selected Risk:', selectedRisk);
+//console.log('All Transactions:', allTransactions);
+//console.log('Filtered Transactions:', filteredTransactions);
+
 
   const totalValue = filteredTransactions.reduce((sum, t) => sum + (parseFloat(t.value) || 0), 0);
   const highRiskCount = filteredTransactions.filter(t => t.risk >= 70).length;
 
-  const pieData = [
-    { name: 'Critical', value: filteredTransactions.filter(t => t.risk >= 90).length },
-    { name: 'High', value: filteredTransactions.filter(t => t.risk >= 70 && t.risk < 90).length },
-    { name: 'Medium', value: filteredTransactions.filter(t => t.risk >= 40 && t.risk < 70).length },
-    { name: 'Low', value: filteredTransactions.filter(t => t.risk < 40).length }
-  ];
+const pieData = [
+  { name: 'Critical', value: filteredTransactions.filter(t => t.risk_category === 'Critical').length },
+  { name: 'High', value: filteredTransactions.filter(t => t.risk_category === 'High').length },
+  { name: 'Medium', value: filteredTransactions.filter(t => t.risk_category === 'Medium').length },
+  { name: 'Low', value: filteredTransactions.filter(t => t.risk_category === 'Low').length }
+];
+
 
   const indexOfLast = currentPage * transactionsPerPage;
   const indexOfFirst = indexOfLast - transactionsPerPage;
@@ -302,7 +309,11 @@ useEffect(() => {
             </div>
             {<div style={{ display: 'flex', flexDirection: 'column', color: '#0b1743', fontWeight: 600, fontSize: '14px' }}>
               <label style={{ marginBottom: '6px' }}>Risk Level</label>
-              <select value={selectedRisk || ''} onChange={(e) => setSelectedRisk(e.target.value || null)} style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc' }}>
+              <select 
+                value={selectedRisk || ''} 
+                onChange={(e) => setSelectedRisk(e.target.value || null)} 
+                style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc' }}
+              >
                 <option value=''>All Risks</option>
                 <option value='Critical'>Critical</option>
                 <option value='High'>High</option>
@@ -374,8 +385,13 @@ useEffect(() => {
                       : '#dcfce7';
                     return (
                       <tr key={i} style={{ backgroundColor: rowBg }}>
-                        <td><span className={`risk-badge ${getRiskClass(tx.risk)}`}>{tx.risk}%</span></td>
-                        <td>{tx.reference_number}</td>
+                       {/**  <td><span className={`risk-badge ${getRiskClass(tx.risk)}`}>{tx.risk}%</span></td> */}
+                        <td>
+                          <span className={`risk-badge risk-${tx.risk_category.toLowerCase()}`}>
+                            {tx.risk.toFixed(2)}%
+                          </span>
+                        </td>
+                          <td>{tx.reference_number}</td>
                         <td>{tx.item_number}</td>
                         <td>{tx.hs}</td>
                         <td>{tx.weight}</td>
