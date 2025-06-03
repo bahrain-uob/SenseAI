@@ -318,12 +318,18 @@ activities.addCorsPreflight({
         handler: 'getFromTransRaw.handler',
         code: lambda.Code.fromAsset('lambda'),
         environment: {
-          TABLE_NAME: dbStack.TransRawTable3.tableName,
+          TABLE_NAME: '99krows_only_scores_with_shap',
         },
       });
 
       // Grant Lambda read access to table
-      dbStack.TransRawTable3.grantReadData(getFromTransRawLambda);
+      /* dbStack.TransRawTable3.grantReadData(getFromTransRawLambda); */
+
+      getFromTransRawLambda.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:Scan'],
+  resources: ['arn:aws:dynamodb:me-south-1:166555558375:table/99krows_only_scores_with_shap'],
+}));
+
 
       // Define integration with CORS response headers
       const rawTransactionIntegration = new apigateway.LambdaIntegration(getFromTransRawLambda, {

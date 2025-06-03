@@ -72,11 +72,11 @@ export default function Auditing() {
     body: JSON.stringify({ limit: 20})
   })
   .then(res => res.json())
-  .then(data => {
+  .then(data => { 
     const normalized = (data.items || []).map(item => ({
       ...item,
-      risk: parseFloat(item.risk_percentage) || 0,
-      risk_category: getRiskCategory(parseFloat(item.risk_percentage) || 0),
+      risk: parseFloat(item.AnomalyScore) || 0,
+      risk_category: getRiskCategory(parseFloat(item.AnomalyScore) || 0),
       id: `${item.rowid}`,
       hs: item.HSCode || '',
       weight: `${item["Net Weight"]} kg`,
@@ -147,7 +147,7 @@ useEffect(() => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      limit: 5000,
+      limit: 100,
       hsCode: hsCode || undefined,
       riskLevel: selectedRisk || undefined,
       fromDate: fromDate || undefined,
@@ -158,8 +158,8 @@ useEffect(() => {
   .then(data => {
     const normalized = (data.items || []).map(item => ({
       ...item,
-      risk: parseFloat(item.risk_percentage) || 0,
-      risk_category: getRiskCategory(parseFloat(item.risk_percentage) || 0),
+      risk: parseFloat(item.AnomalyScore) || 0,
+      risk_category: getRiskCategory(parseFloat(item.AnomalyScore) || 0),
       id: `${item.rowid}`,
       hs: item.HSCode || '',
       weight: `${item["Net Weight"]} kg`,
