@@ -300,7 +300,7 @@ useEffect(() => {
               <label style={{ marginBottom: '6px' }}>HS Code Search</label>
               <input type="text" placeholder="Enter HS code" value={hsCode} onChange={(e) => setHsCode(e.target.value)} style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc', minWidth: '200px' }} />
             </div>
-            {/* <div style={{ display: 'flex', flexDirection: 'column', color: '#0b1743', fontWeight: 600, fontSize: '14px' }}>
+            {<div style={{ display: 'flex', flexDirection: 'column', color: '#0b1743', fontWeight: 600, fontSize: '14px' }}>
               <label style={{ marginBottom: '6px' }}>Risk Level</label>
               <select value={selectedRisk || ''} onChange={(e) => setSelectedRisk(e.target.value || null)} style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc' }}>
                 <option value=''>All Risks</option>
@@ -309,9 +309,9 @@ useEffect(() => {
                 <option value='Medium'>Medium</option>
                 <option value='Low'>Low</option>
               </select>
-            </div> */}
+            </div>}
 
-          {/* <div style={{ display: 'flex', flexDirection: 'column', color: '#0b1743', fontWeight: 600, fontSize: '14px' }}>
+          {/* {<div style={{ display: 'flex', flexDirection: 'column', color: '#0b1743', fontWeight: 600, fontSize: '14px' }}>
               <label style={{ marginBottom: '6px' }}>Reference Number</label>
               <input
                     type="text"
@@ -325,7 +325,7 @@ useEffect(() => {
                     }}
                     style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc', minWidth: '200px' }}
                   />
-           </div>  */}
+           </div> } */}
 
 
 
