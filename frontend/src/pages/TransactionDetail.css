@@ -402,3 +402,14 @@
   font-size: 13px;
   margin-bottom: 0.5rem;
 }
+.shap-chart h3 {
+  font-size: 18px;
+  color: #1f2937;
+}
+
+.recharts-y-axis .recharts-cartesian-axis-tick tspan {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 140px;
+}
