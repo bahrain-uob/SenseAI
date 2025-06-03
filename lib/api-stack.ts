@@ -210,7 +210,7 @@ export class APIStack extends cdk.Stack {
           environment: {
             KNOWLEDGE_BASE_ID: "FAIIYRNX5D",
   
-            MODEL_ARN: "arn:aws:bedrock:eu-west-1::foundation-model/amazon.nova-pro-v1:0"
+            MODEL_ARN: "arn:aws:bedrock:*::foundation-model/amazon.nova-pro-v1:0"
           },
           timeout: cdk.Duration.seconds(30)
         });

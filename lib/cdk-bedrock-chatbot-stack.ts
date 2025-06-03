@@ -65,8 +65,8 @@ export class CdkBedrockChatbotStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const knowledgeBaseArn = "arn:aws:bedrock:eu-west-1:166555558375:knowledge-base/FAIIYRNX5D"; // Full ARN for your KB
-    const modelArn = "arn:aws:bedrock:eu-west-1::foundation-model/mistral.mixtral-8x7b-instruct-v0:1";
+    const knowledgeBaseArn = "arn:aws:bedrock:*:166555558375:knowledge-base/FAIIYRNX5D"; // Full ARN for your KB
+    const modelArn = "arn:aws:bedrock:*:166555558375:inference-profile/eu.amazon.nova-pro-v1:0";
 
     // Bedrock Lambda function for chatbot
     const chatBedrockLambda = new lambda.Function(this, "ChatBedrockLambda", {
@@ -84,7 +84,8 @@ export class CdkBedrockChatbotStack extends cdk.Stack {
         "bedrock:RetrieveAndGenerate",
         "bedrock:Retrieve",
         "bedrock:InvokeModel",
-        "bedrock:InvokeModelWithResponseStream"
+        "bedrock:InvokeModelWithResponseStream",
+        "bedrock:GetInferenceProfile"
       ],
       resources: [
         knowledgeBaseArn
