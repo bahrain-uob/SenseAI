@@ -201,7 +201,7 @@ export class APIStack extends cdk.Stack {
         });
 
         
-// Bedrock endpoint configuration for the chatbot
+// Bedrock endpoint configuration for the chatbot 
         const chatBedrockLambda = new lambda.Function(this, "ChatBedrockLambda", {
           runtime: lambda.Runtime.PYTHON_3_11,
           handler: "chatbedrock.lambda_handler", 
