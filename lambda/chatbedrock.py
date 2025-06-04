@@ -2,68 +2,120 @@ import boto3
 import os
 import json
 
+# Initialize the Bedrock Agents client in the correct region
 bedrock_agent = boto3.client("bedrock-agent-runtime", region_name="eu-west-1")
 
 def handler(event, context):
-    body = json.loads(event['body'])
-    question = body.get("question", "").strip()
+    """
+    Lambda handler to:
+      • Validate incoming JSON with a 'question' field
+      • Query a Bedrock knowledge base (RAG)
+      • Return the generated answer plus any citations
+    """
+    try:
+        # Reject requests with no body
+        if event.get('body') is None:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"message": "Request body is missing"})
+            }
 
-    if not question:
+        # Parse JSON and extract question
+        body = json.loads(event['body'])
+        question = body.get("question")
+        if not question:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"message": "Question field is missing in the body"})
+            }
+
+        # Load knowledge-base ID from environment
+        knowledge_base_id = os.environ.get("KNOWLEDGE_BASE_ID")
+        if not knowledge_base_id:
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"message": "Missing KNOWLEDGE_BASE_ID environment variable"})
+            }
+
+        # Define the model ARN
+        model_arn = "arn:aws:bedrock:eu-west-1:166555558375:inference-profile/eu.amazon.nova-pro-v1:0"
+
+        # Call the RAG API with corrected configuration
+        response = bedrock_agent.retrieve_and_generate(
+            input={"text": question},
+            retrieveAndGenerateConfiguration={
+                "type": "KNOWLEDGE_BASE",
+                "knowledgeBaseConfiguration": {
+                    "knowledgeBaseId": knowledge_base_id,
+                    "modelArn": model_arn,
+                    "retrievalConfiguration": {
+                        "vectorSearchConfiguration": {
+                            "numberOfResults": 3
+                        }
+                    },
+                    "orchestrationConfiguration": {
+                        "promptTemplate": {
+                            "textPromptTemplate": (
+                                "You are a customs policy assistant for Bahrain Customs Affairs.\n\n"
+                                "Your job is to answer questions about regulations, procedures, and transaction policies using only the information in the context provided.  You may add brief, valuable related details only if they are factually accurate and directly relevant.\n\nLanguage Policy / سياسة اللغة:\n\n- If the user's question is in Arabic, you must answer in Arabic.  \n  إذا كان سؤال المستخدم باللغة العربية، يجب أن تكون الإجابة باللغة العربية فقط.\n\n- If the user's question is in English, you must answer in English.  \n  إذا كان السؤال باللغة الإنجليزية، أجب باللغة الإنجليزية فقط.\n\n- If the relevant context is in Arabic, respond in Arabic — even if the question is in English.  \n  إذا كان السياق المعروض باللغة العربية، أجب باللغة العربية.\n\n- If the relevant context is in English, respond in English — unless the user's question is in Arabic.\n\nDo not mix Arabic and English in one answer.  \nلا تخلط بين اللغتين في إجابة واحدة.  \nAlways match the language of the question or the document context.  \nحافظ على نفس لغة السؤال أو المصدر في الإجابة.\n\nIf no answer is found in the context and no related knowledge applies, respond with:  \n\"عذرًا، لا تتوفر لدينا معلومات كافية للإجابة على هذا السؤال.\"  \nor  \n\"Sorry, there is not enough information available to answer this question.\"\n\nKeep your tone professional, clear, and concise.  \nكن رسميًا وواضحًا وموجزًا في إجاباتك.\n\nContext:\n{{context}}\n\nQuestion:\n{{input}}\n\nAnswer:"
+
+                                 "Below is the conversation history and retrieved information to guide your response.\n\n"
+                                "Conversation History:\n$conversation_history$\n\n"
+                                "Retrieved Information:\n$search_results$\n\n"
+                                "Query: $query$\n\n"
+                                "Provide a concise and accurate answer in the following format:\n$output_format_instructions$"
+                            )
+                        }
+                    },
+                    "generationConfiguration": {
+                        "inferenceConfig": {
+                            "textInferenceConfig": {
+                                "maxTokens": 512,
+                                "temperature": 0.7
+                            }
+                        },
+                        "promptTemplate": {
+                            "textPromptTemplate": (
+                                "Based on the following context, answer the query.\n\n"
+                                "$search_results$\n\n"
+                                "Query: $query$\n\n"
+                                "Answer:"
+                            )
+                        }
+                    }
+                }
+            }
+        )
+
+        # Build a 200 response with the model’s answer and any citations
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": "http://localhost:3000"
+            },
+            "body": json.dumps({
+                "answer": response['output']['text'],
+                "sources": response.get('citations', [])
+            })
+        }
+
+    except json.JSONDecodeError:
+        # Handle invalid JSON in the request
         return {
             "statusCode": 400,
-            "body": json.dumps({ "error": "Missing or empty question." })
+            "body": json.dumps({"message": "Invalid JSON format"})
         }
 
-    # Custom bilingual prompt for controlled answer generation
-    instruction = """
-أنت مساعد للإجابة على الأسئلة المتعلقة بشئون الجمارك في مملكة البحرين. سيتم تزويدك بنتائج بحث من قاعدة المعرفة الرسمية للجمارك. استخدم فقط هذه النتائج للإجابة على سؤال المستخدم.
-
-- إذا كان السؤال باللغة العربية، يجب أن تكون الإجابة باللغة العربية فقط.
-- إذا كان السؤال باللغة الإنجليزية، يجب أن تكون الإجابة باللغة الإنجليزية فقط.
-- لا تخلط بين اللغتين في نفس الإجابة.
-
-اعتمد فقط على المعلومات الموجودة في نتائج البحث. لا تضف افتراضات خارجية أو معلومات غير موجودة في السياق. إذا لم تجد معلومات كافية للإجابة على السؤال، يجب أن تصرح بأنك لم تتمكن من العثور على إجابة دقيقة.
-
-You are a question answering agent for Bahrain Customs Affairs. You will be provided with a set of search results from the official customs knowledge base. Use only these results to answer the user's question.
-
-- If the question is in Arabic, respond only in Arabic.
-- If the question is in English, respond only in English.
-- Do not mix languages in your response.
-
-Strictly base your answer on the content of the search results. Do not invent answers or assume facts not in the context. If the search results do not contain the information needed to answer the question, clearly state that you could not find an exact answer.
-
-Here are the search results in numbered order:
-$search_results$
-
-$output_format_instructions$
-
-Here is the user's query:
-$query$
-""".strip()
-
-    response = bedrock_agent.retrieve_and_generate(
-        input={"text": instruction},
-        knowledgeBaseId=os.environ['FAIIYRNX5D'],
-        retrievalConfiguration={
-            "vectorSearchConfiguration": {
-                "numberOfResults": 3
-            }
-        },
-        generationConfiguration={
-            "modelArn": "arn:aws:bedrock:eu-west-1::foundation-model/amazon.nova-pro-v1:0",
-            "temperature": 0.3,
-            "topP": 0.9,
-            "maxTokens": 1024,
+    except KeyError as e:
+        # Handle unexpected response structure
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"message": f"Missing key in the response: {e}"})
         }
-    )
 
-    return {
-        "statusCode": 200,
-        "headers": {
-            "Access-Control-Allow-Origin": "https://d10uresn4y47do.cloudfront.net"
-        },
-        "body": json.dumps({
-            "answer": response['output']['text'],
-            "sources": response.get('citations', [])
-        })
-    }
+    except Exception as e:
+        # Catch-all for any other errors
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"message": f"Internal server error: {e}"})
+        }

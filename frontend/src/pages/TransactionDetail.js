@@ -1,196 +1,3 @@
-/* import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import "./TransactionDetail.css";
-import {
-  FaBoxOpen, FaGlobe, FaMoneyBill,
-  FaBalanceScale, FaChartLine, FaFileAlt
-} from "react-icons/fa";
-import {
-  BarChart, Bar, XAxis, YAxis,
-  Tooltip, ResponsiveContainer, Cell
-} from "recharts";
- 
-const TransactionDetail = () => {
-  const { referenceNumber, itemNumber } = useParams();
-  const [data, setData] = useState(null);
- 
-  useEffect(() => {
-    fetch("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/ShapTransaction", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ referenceNumber, itemNumber })
-    })
-      .then(res => res.json())
-      .then(json => setData(json.item || null))
-      .catch(console.error);
-  }, [referenceNumber, itemNumber]);
- 
-  const Section = ({ title, rows, icon }) => (
-    <div className="section">
-      <h3>{icon} {title}</h3>
-      <table>
-        <tbody>
-          {rows.map(([label, value]) => (
-            <tr key={label}><th>{label}</th><td>{value || "-"}</td></tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
- 
-  if (!data) {
-    return (
-      <div className="report-container">
-        <h2 className="report-title">Transaction Details</h2>
-        <p style={{ textAlign: "center", marginTop: "2rem" }}>Loading or not found...</p>
-      </div>
-    );
-  }
- 
-  // Extract and invert SHAP impact values
-  const shapData = Object.entries(data)
-    .filter(([key]) => key.startsWith("SHAP_%_"))
-    .map(([key, val]) => ({
-      name: key.replace("SHAP_%_", ""),
-      impact: -parseFloat(val) // Invert the SHAP value
-    }))
-    .sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact))
-    .slice(0, 10);
- 
-  const minImpact = Math.min(...shapData.map(d => d.impact));
-  const maxImpact = Math.max(...shapData.map(d => d.impact));
- 
-  return (
-    <div className="report-container">
-      <h2 className="report-title">Transaction Details</h2>
- 
-      {shapData.length > 0 && (
-        <div className="shap-chart">
-          <h3 style={{ marginBottom: "1rem", fontWeight: "bold", fontSize: "18px" }}>
-            العوامل المسببة لنسبة الخطر
-          </h3>
-          <div style={{ width: "100%", height: 400 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={shapData}
-                layout="vertical"
-                margin={{ top: 20, right: 30, left: 120, bottom: 20 }}
-              >
-                <XAxis
-                  type="number"
-                  tick={{ fontSize: 12 }}
-                  domain={[
-                    minImpact * 1.1,
-                    maxImpact * 1.1
-                  ]}
-                  tickFormatter={(v) => `${v.toFixed(1)}%`}
-                />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  tick={{ fontSize: 12 }}
-                  width={150}
-                />
-                <Tooltip
-                  formatter={(value) => `${value.toFixed(2)}%`}
-                  labelStyle={{ fontWeight: "bold" }}
-                  contentStyle={{ fontSize: "14px" }}
-                />
-                <Bar dataKey="impact" radius={[5, 5, 5, 5]}>
-                  {shapData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.impact < 0 ? "#10B981" : "#EF4444"}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
- 
-      <div className="row-group">
-        <Section
-          title="Product & HS Code"
-          icon={<FaBoxOpen />}
-          rows={[
-            ["HS Code", data.HSCode],
-            ["Description", data["Commercial Description"]],
-            ["Regime", data.Regime],
-            ["HS Rate", data["HS-Rate"]],
-            ["Package Code", data["Package Code"]],
-            ["Supplementary Unit", data["Sup Unit"]],
-          ]}
-        />
-        <Section
-          title="Origin & Export Details"
-          icon={<FaGlobe />}
-          rows={[
-            ["Country of Origin", data["Country of Origin"]],
-            ["Exporter CR", data["Exporter CR"]],
-            ["Exporter Name", data["Exporter Name"]],
-          ]}
-        />
-        <Section
-          title="Invoice & Value Details"
-          icon={<FaMoneyBill />}
-          rows={[
-            ["Invoice Currency", data["Invoice Currency"]],
-            ["Local Amount", data["Local Amount"]],
-            ["VAT Rate", data["VAT Rate"]],
-            ["VAT BHD", data["VAT BHD"]],
-            ["Fees", data.Fees],
-          ]}
-        />
-      </div>
- 
-      <div className="row-group">
-        <Section
-          title="Weight & Measurement"
-          icon={<FaBalanceScale />}
-          rows={[
-            ["Gross Weight", data["Gross Weight"]],
-            ["Net Weight", data["Net Weight"]],
-            ["Amount / Net Weight", data["Amount / Net Weight"]],
-            ["Net Weight / Package", data["Net Weight / Package"]],
-            ["Net Weight / Sup", data["Net Weight / Sup"]],
-            ["Amount / Package", data["Amount / Package"]],
-            ["Amount / Sup", data["Amount / Sup"]],
-            ["Sup Amt", data["Sup Amt"]],
-          ]}
-        />
-        <Section
-          title="Pricing Analysis"
-          icon={<FaChartLine />}
-          rows={[
-            ["Max Amount", data["Max Amount"]],
-            ["Average Amount", data["Average Amount"]],
-            ["Min Amount", data["Min Amount"]],
-            ["Main Max", data["Main Max"]],
-            ["Main Min", data["Main Min"]],
-          ]}
-        />
-        <Section
-          title="Declaration & Parties"
-          icon={<FaFileAlt />}
-          rows={[
-            ["Registration Serial", data["Registration Serial"]],
-            ["Registration Number", data["Registration Number"]],
-            ["Registration Date", data["Registration Date"]],
-            ["Declarant CR", data["Declarant CR"]],
-            ["Declarant Name", data["Declarant Name"]],
-            ["Consignee CR", data["Consignee CR"]],
-            ["Consignee Name", data["Consignee Name"]],
-          ]}
-        />
-      </div>
-    </div>
-  );
-};
- 
-export default TransactionDetail; */
-
 
 import React, { useState, useEffect } from "react";
 import "./TransactionDetail.css";
@@ -205,12 +12,20 @@ import * as XLSX from "xlsx";
 import { CognitoUserPool } from 'amazon-cognito-identity-js';
 import { useParams } from 'react-router-dom';
 import { poolData } from '../awsConfig.js';
+import {
+  BarChart, Bar, XAxis, YAxis,
+  Tooltip, ResponsiveContainer, Cell
+} from "recharts";
 
 const TransactionDetail = () => {
- const { reference_number, item_number } = useParams();
+const { referenceNumber, itemNumber } = useParams(); // ✅ ✅ ✅
+
 // 🔥 Dynamic Transaction ID
   
-  const cognitoUser = poolData.getCurrentUser();
+  /* const cognitoUser = poolData.getCurrentUser(); */
+  const userPool = new CognitoUserPool(poolData);
+  const cognitoUser = userPool.getCurrentUser(); // ✅ CORRECT
+
   let userName = 'Unknown';
   if (cognitoUser) {
     cognitoUser.getSession((err, session) => {
@@ -228,7 +43,8 @@ const TransactionDetail = () => {
   }
 
   const getCurrentUser = () => {
-    const user = poolData.getCurrentUser(); // 🔥 Fix here
+    const userPool = new CognitoUserPool(poolData); // ✅ FIX
+    const user = userPool.getCurrentUser();
     if (user) {
       return new Promise((resolve, reject) => {
         user.getSession((err, session) => {
@@ -274,7 +90,6 @@ const TransactionDetail = () => {
   const [notFlaggedReason, setNotFlaggedReason] = useState("");
   const [showReport, setShowReport] = useState(false);
   const [activityLogs, setActivityLogs] = useState([]);
-  const { referenceNumber, itemNumber } = useParams();
   const [data, setData] = useState(null);
 
   const arabicActions = ["تعديل البيان", "تحويل الى الشؤون القانونية"];
@@ -285,8 +100,8 @@ const TransactionDetail = () => {
   const logAction = async (action, type = "", explanation = "", flager = "") => {
   try {
     await axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities", {
-      reference_number,             // ✅ separate field
-      item_number,                 // ✅ separate field
+      reference_number: referenceNumber,
+      item_number: itemNumber,
       EmployeeName: userName,
       Action: action,
       TypeOfError: type,
@@ -306,8 +121,8 @@ const TransactionDetail = () => {
       "https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities",
       {
         params: {
-          reference_number,
-          item_number
+          referenceNumber,
+          itemNumber
         }
       }
     );
@@ -320,7 +135,7 @@ const TransactionDetail = () => {
 
   const handleFlagSelect = (action) => {
     setSelectedAction(action);
-    saveActionForTransaction(reference_number, item_number , action);  // 🔥 Save to localStorage
+    saveActionForTransaction(referenceNumber, itemNumber , action);  // 🔥 Save to localStorage
     setShowFlagMenu(false);
     setShowFlagDetails(true);
   };
@@ -329,7 +144,7 @@ const TransactionDetail = () => {
     const logText = `مخالف: ${selectedAction}`;
     logAction(logText, selectedType, selectedExplanation, selectedFlager);
     setSelectedAction(logText);
-    saveActionForTransaction(reference_number, item_number , logText);  // 🔥 Save to localStorage
+    saveActionForTransaction(referenceNumber, itemNumber , logText);  // 🔥 Save to localStorage
     setShowFlagDetails(false);
     setSelectedType("");
     setSelectedExplanation("");
@@ -339,7 +154,7 @@ const TransactionDetail = () => {
   const handleCloseCase = () => {
     const logText = "إغلاق تدقيق المعاملة";
     setSelectedAction(logText);
-    saveActionForTransaction(reference_number, item_number , logText);  // 🔥 Save
+    saveActionForTransaction(referenceNumber, itemNumber , logText);  // 🔥 Save
     logAction(logText);
     setShowNotFlaggedComment(false);
     setNotFlaggedReason("");
@@ -348,7 +163,7 @@ const TransactionDetail = () => {
   const handlePending = () => {
     const logText = "قيد التدقيق";
     setSelectedAction(logText);
-    saveActionForTransaction(reference_number, item_number , logText);  // 🔥 Save
+    saveActionForTransaction(referenceNumber, itemNumber , logText);  // 🔥 Save
     logAction(logText);
   };
 
@@ -360,8 +175,9 @@ const TransactionDetail = () => {
 
       // ✅ Send separate fields instead of the old one
       await axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities", {
-        reference_number,
-        item_number,
+       
+        reference_number: referenceNumber,
+      item_number: itemNumber,
         Action: "Open",
         EmployeeName: userName,
         Timestamp: new Date().toISOString()
@@ -370,8 +186,8 @@ const TransactionDetail = () => {
       // ✅ Updated GET query to filter using both fields
       const response = await axios.get(`https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities`, {
         params: {
-          reference_number,
-          item_number
+          referenceNumber,
+          itemNumber
         }
       });
 
@@ -382,13 +198,13 @@ const TransactionDetail = () => {
   };
 
   logOpenAction();
-}, [reference_number, item_number]);
+}, [referenceNumber, itemNumber]);
 
 
 
  useEffect(() => {
   const fetchSavedAction = async () => {
-    const action = await getSavedAction(reference_number, item_number);
+    const action = await getSavedAction(referenceNumber, itemNumber);
     if (action) {
       setSelectedAction(action);
     }
@@ -396,14 +212,14 @@ const TransactionDetail = () => {
   fetchSavedAction();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [reference_number, item_number]);
+}, [referenceNumber, itemNumber]);
 
 
   const exportExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(activityLogs);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
-    XLSX.writeFile(workbook, `Transaction_Report_${reference_number}_${item_number}.xlsx`
+    XLSX.writeFile(workbook, `Transaction_Report_${referenceNumber}_${itemNumber}.xlsx`
 );
   };
   const printReport = () => window.print();
@@ -431,6 +247,7 @@ const TransactionDetail = () => {
         console.error("❌ Fetch error:", err);
       });
   }, [referenceNumber, itemNumber]);
+
  
  const Section = ({ title, rows, icon }) => (
     <div className="section">
@@ -457,12 +274,90 @@ const TransactionDetail = () => {
  
   console.log("🟢 Rendering data:", data);
 
-
+/* useEffect(() => {
+    fetch("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/ShapTransaction", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ referenceNumber, itemNumber })
+    })
+      .then(res => res.json())
+      .then(json => setData(json.item || null))
+      .catch(console.error);
+  }, [referenceNumber, itemNumber]); */
+ 
+  if (!data) {
+    return (
+      <div className="report-container">
+        <h2 className="report-title">Transaction Details</h2>
+        <p style={{ textAlign: "center", marginTop: "2rem" }}>Loading or not found...</p>
+      </div>
+    );
+  }
+ 
+  // Extract and invert SHAP impact values
+  const shapData = Object.entries(data)
+    .filter(([key]) => key.startsWith("SHAP_%_"))
+    .map(([key, val]) => ({
+      name: key.replace("SHAP_%_", ""),
+      impact: -parseFloat(val) // Invert the SHAP value
+    }))
+    .sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact))
+    .slice(0, 10);
+ 
+  const minImpact = Math.min(...shapData.map(d => d.impact));
+  const maxImpact = Math.max(...shapData.map(d => d.impact));
   
 
   return (
     <div className="report-container">
       <h2 className="report-title">تفاصيل المعاملة</h2>
+
+    {shapData.length > 0 && (
+            <div className="shap-chart">
+              <h3 style={{ marginBottom: "1rem", fontWeight: "bold", fontSize: "18px" }}>
+                العوامل المسببة لنسبة الخطر
+              </h3>
+              <div style={{ width: "100%", height: 400 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={shapData}
+                    layout="vertical"
+                    margin={{ top: 20, right: 30, left: 120, bottom: 20 }}
+                  >
+                    <XAxis
+                      type="number"
+                      tick={{ fontSize: 12 }}
+                      domain={[
+                        minImpact * 1.1,
+                        maxImpact * 1.1
+                      ]}
+                      tickFormatter={(v) => `${v.toFixed(1)}%`}
+                    />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      tick={{ fontSize: 12 }}
+                      width={150}
+                    />
+                    <Tooltip
+                      formatter={(value) => `${value.toFixed(2)}%`}
+                      labelStyle={{ fontWeight: "bold" }}
+                      contentStyle={{ fontSize: "14px" }}
+                    />
+                    <Bar dataKey="impact" radius={[5, 5, 5, 5]}>
+                      {shapData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.impact < 0 ? "#10B981" : "#EF4444"}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
       <div className="transaction-actions">
         <span className="status-label">الإجراء المتخذ:</span>
         <div className="flag-container">
@@ -598,7 +493,7 @@ const TransactionDetail = () => {
       {showReport && (
         <div className="report-modal">
           <div className="report-header">
-            <h3>📑 تقرير الإجراءات والمخالفات – {reference_number }</h3>
+            <h3>📑 تقرير الإجراءات والمخالفات – {referenceNumber }</h3>
             <button onClick={() => setShowReport(false)}><FaTimes /></button>
           </div>
           <p>المراجع: {userName} | تم التوليد: {new Date().toLocaleString()}</p>
@@ -625,6 +520,13 @@ const TransactionDetail = () => {
         </div>
       )}
     </div>
+
+
+
+
+
+
+
   );
 };
 

@@ -168,7 +168,7 @@ import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
-import { amiriFontBase64 } from '../fonts/Amiri-Regular-base64'; // Base64 import
+import  amiriFontBase64 from '../fonts/Amiri-Regular-base64'; // Base64 import
 
 // Initialize pdfMake with Amiri font
 pdfMake.vfs = {
@@ -211,9 +211,11 @@ const EmployeeActivities = () => {
           time: timePart,
           employee: item.EmployeeName,
           action: item.Action,
-          transaction: item["Reference Number"],
-          itemNo: item["Item Number"], //changed!!!!!
+          transaction: item["reference_number"],
+          itemNo: item["item_number"], //changed!!!!!
           timestamp: item.Timestamp,
+          flager: item.Flager,
+          typeOfError: item.TypeOfError,
         };
       }).filter(Boolean);
       setAllActivities(parsed);
@@ -231,7 +233,8 @@ const EmployeeActivities = () => {
       (actionFilter === 'All' || act.action === actionFilter) &&
       (searchTransaction === '' || act.transaction?.toLowerCase().includes(searchTransaction.toLowerCase()))
     );
-  });
+  })
+  .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   const uniqueEmployees = [...new Set(allActivities.map(act => act.employee))];
   const uniqueActions = [...new Set(allActivities.map(act => act.action))];
@@ -317,15 +320,19 @@ const EmployeeActivities = () => {
       <div className="activities-card">
         <table className="activities-table">
           <thead>
-            <tr><th>Date</th><th>Employee</th><th>Action</th><th>Transaction</th></tr>
+            <tr><th>Refernce Number</th><th>Item Number</th><th>Date</th><th>Employee</th><th>Action</th><th>Flager</th><th>Error Type</th></tr>
           </thead>
           <tbody>
             {filteredActivities.map((act, idx) => (
               <tr key={idx}>
+                <td>{act.transaction}</td>
+                <td>{act.itemNo}</td>
                 <td>{act.date}<br /><small>{act.time}</small></td>
                 <td><FontAwesomeIcon icon={faUserCircle} /> {act.employee}</td>
                 <td>{act.action}</td>
-                <td>{act.transaction}</td>
+                <td>{act.flager}</td>
+                <td>{act.typeOfError}</td>
+
               </tr>
             ))}
           </tbody>

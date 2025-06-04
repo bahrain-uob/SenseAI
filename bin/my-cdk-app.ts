@@ -8,6 +8,7 @@ import { AnomalyStack } from '../lib/anomaly-stack';
 import { PreprocessingStack } from '../lib/preprocessing-stack';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import * as s3 from "aws-cdk-lib/aws-s3";
+import { CdkBedrockChatbotStack } from "../lib/cdk-bedrock-chatbot-stack";
 const app = new cdk.App();
 
 // Create the DBStack
@@ -19,7 +20,12 @@ const MyCdkAppStack = new MyCdkStack(app, "MyCdkAppStack",dbStack.TransRawTable,
 // Create the APIStack, passing in the DBStack as a dependency
 const apistack= new APIStack(app, "APIStack", dbStack, MyCdkAppStack.TransactionUploadsBucket,MyCdkAppStack.uploadobjBucket); 
 
-
+new CdkBedrockChatbotStack(app, 'CdkBedrockChatbotStack', {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: 'eu-west-1', // 👈 Set region to Ireland explicitly
+  },
+});
 
 
 

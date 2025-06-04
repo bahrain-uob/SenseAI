@@ -23,7 +23,7 @@ const getRiskCategory = (score) => {
   else return 'Low';
 };
 
-const COLORS = ['#f97316', '#facc15', '#4ade80'];
+const COLORS = ['#dc2626', '#f97316', '#facc15', '#4ade80'];
 const renderLabel = ({ percent }) => `${(percent * 100).toFixed(0)}%`;
 
 export default function Auditing() {
@@ -153,7 +153,7 @@ const filteredTransactions = allTransactions.filter(tx => {
   const highRiskCount = filteredTransactions.filter(t => t.risk >= 70).length;
 
 const pieData = [
-  
+  { name: 'Critical', value: filteredTransactions.filter(t => t.risk_category === 'Critical').length },
   { name: 'High', value: filteredTransactions.filter(t => t.risk_category === 'High').length },
   { name: 'Medium', value: filteredTransactions.filter(t => t.risk_category === 'Medium').length },
   { name: 'Low', value: filteredTransactions.filter(t => t.risk_category === 'Low').length }
@@ -202,7 +202,7 @@ const pieData = [
               </PieChart>
             </ResponsiveContainer>
             <div className="pie-legend">
-              {['High', 'Medium', 'Low'].map((label, i) => (
+              {['Critical', 'High', 'Medium', 'Low'].map((label, i) => (
                 <div className="pie-legend-item" key={label}>
                   <span className="pie-legend-color" style={{ backgroundColor: COLORS[i] }}></span>
                   <span>{label}</span>
@@ -313,6 +313,7 @@ const pieData = [
                 style={{ padding: '10px', fontSize: '14px', borderRadius: '6px', border: '1px solid #ccc' }}
               >
                 <option value=''>All Risks</option>
+                <option value='Critical'>Critical</option>
                 <option value='High'>High</option>
                 <option value='Medium'>Medium</option>
                 <option value='Low'>Low</option>
