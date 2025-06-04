@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaPlane, FaTruckMoving, FaShip, FaChevronRight, FaSyncAlt, FaExclamationTriangle, FaBell } from 'react-icons/fa';
 import './Home.css';
+import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import NotificationCard from '../NotificationCard';
 import { Doughnut } from 'react-chartjs-2';
@@ -14,29 +15,96 @@ const Home = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Upload Complete', message: 'Your file has been successfully uploaded to Sea Port.', time: 'Just now' },
-    { id: 2, title: 'Report Reviewed', message: 'Your flagged items were reviewed by Ahmed.', time: '5 min ago' },
-    { id: 3, title: 'Login Success', message: 'You logged in from a new device.', time: '1 hour ago' },
-    { id: 4, title: 'Login Success', message: 'You logged in from a new device.', time: '1 hour ago' },
-  ]);
+ const [highRiskTransactions, setHighRiskTransactions] = useState([]);
+const [loading, setLoading] = useState(true);
+ const [allActivities, setAllActivities] = useState([]);
 
-  const [highRiskTransactions] = useState([
-    { id: 'TRX1345', risk: 98, level: 'Critical', port: 'Khalifa Bin Salman Port', pending: '10 days' },
-    { id: 'TRX1395', risk: 97, level: 'Critical', port: 'Khalifa Bin Salman Port', pending: '12 days' },
-    { id: 'TRX1335', risk: 96, level: 'Critical', port: 'Khalifa Bin Salman Port', pending: '15 days' },
-    { id: 'TRX6722', risk: 96, level: 'Critical', port: 'Khalifa Bin Salman Port', pending: '5 days' },
-    { id: 'TRX9102', risk: 91, level: 'Critical', port: 'King Fahd Causeway', pending: '3 days' },
-    { id: 'TRX9222', risk: 88, level: 'High', port: 'King Fahd Causeway', pending: '2 days' },
-    { id: 'TRX4678', risk: 88, level: 'High', port: 'Bahrain International Airport', pending: '1 day' },
-    { id: 'TRX2746', risk: 86, level: 'High', port: 'King Fahd Causeway', pending: '1 day' },
-    { id: 'TRX2776', risk: 86, level: 'High', port: 'King Fahd Causeway', pending: '4 days' },
-    { id: 'TRX4888', risk: 85, level: 'High', port: 'Bahrain International Airport', pending: '2 days' },
-  ]);
+useEffect(() => {
+  fetch("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/RawTransaction", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ limit: 100 }) // Adjust the limit if needed
+  })
+    .then(res => res.json())
+    .then(data => {
+      const filtered = (data.items || []).map(item => ({
+        id: item["Reference Number"] || 'Unknown',
+        itemnumber: item["Item Number"] || 'Unknown',
+        risk: parseFloat(item.AnomalyScore) || 0,
+        level: parseFloat(item.AnomalyScore) >= 90 ? 'Critical' : parseFloat(item.AnomalyScore) >= 70 ? 'High' : 'Medium',
+        hscode: item.HSCode || '',
+        value: `${item["Local Amount"]} BD`,
+      }))
+      .filter(tx => tx.risk >= 70) // Only High or Critical
+      .sort((a, b) => b.risk - a.risk); // Sort by risk descending
 
-  const handleDismiss = (id) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+      setHighRiskTransactions(filtered);
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error("❌ Failed to fetch high risk transactions:", err);
+      setLoading(false);
+    });
+}, []);
+
+
+const [notifications, setNotifications] = useState([]);
+
+/* useEffect(() => {
+  fetch("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities", {
+    method: "GET"
+  })
+    .then(res => res.json())
+    .then(data => {
+      const formatted = (data.items || []).map(item => ({
+        
+        employee: item.EmployeeName,
+        action: item.Action,
+        transaction: item["reference_number"],
+        itemNo: item["item_number"],
+        message: `${item.EmployeeName || 'User'} performed ${item.action}`,
+        time: item.timestamp || "Unknown time"
+      }));
+      setNotifications(formatted);
+    })
+    .catch(err => {
+      console.error("❌ Failed to fetch employee notifications:", err);
+    });
+}, []); */
+
+useEffect(() => {
+    fetchActivities();
+  }, []);
+
+  const fetchActivities = async () => {
+    try {
+      const res = await axios.get('https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities');
+      const parsed = res.data.map((item) => {
+        if (!item.Timestamp) return null;
+        const d = new Date(item.Timestamp);
+        if (isNaN(d)) return null;
+        const [datePart, timePart] = d.toLocaleString().split(', ');
+        return {
+          date: datePart,
+          time: timePart,
+          employee: item.EmployeeName,
+          action: item.Action,
+          transaction: item["reference_number"],
+          itemNo: item["item_number"], //changed!!!!!
+          timestamp: item.Timestamp,
+          flager: item.Flager,
+          typeOfError: item.TypeOfError,
+        };
+      }).filter(Boolean);
+      setAllActivities(parsed);
+    } catch (err) {
+      console.error('Failed to fetch activities:', err);
+    }
   };
+
+
+
+  
 
   // Chart Data Prep
   const maxTransactions = 20;
@@ -106,23 +174,30 @@ const Home = () => {
               <table className="high-risk-table">
                 <thead className='title-risk-table'>
                   <tr>
-                    <th>{t('transaction-id')}</th>
+                    <th>{t('Reference Number ')}</th>
+                    <th>{t('Item Number')}</th>
                     <th>{t('Risk')}</th>
                     <th>{t('risk')}</th>
-                    <th>{t('port')}</th>
-                    <th>{t('pending')}</th>
+                    <th>{t('HS Code')}</th>
+                    <th>{t('Value')}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {highRiskTransactions.map((tx) => (
-                    <tr key={tx.id}>
-                      <td>{tx.id}</td>
-                      <td>{tx.risk}%</td>
-                      <td><span className={`risk-badge ${tx.level.toLowerCase()}`}>{tx.level}</span></td>
-                      <td>{tx.port}</td>
-                      <td>{tx.pending}</td>
-                    </tr>
-                  ))}
+                                  {loading ? (
+                    <tr><td colSpan="5">Loading...</td></tr>
+                  ) : (
+                    highRiskTransactions.map((tx) => (
+                      <tr key={tx.id}>
+                        <td>{tx.id}</td>
+                        <td>{tx.itemnumber}</td>
+                        <td>{tx.risk.toFixed(1)}%</td>
+                        <td><span className={`risk-badge ${tx.level.toLowerCase()}`}>{tx.level}</span></td>
+                        <td>{tx.hscode}</td>
+                        <td>{tx.value}</td>
+                      </tr>
+                    ))
+                  )}
+
                 </tbody>
               </table>
             </div>
@@ -145,24 +220,25 @@ const Home = () => {
             </div>
 
             <div className="notifications-card">
-              <h3 className="card-title"><FaBell style={{ marginRight: '8px', color: '#c7a349' }} />{t('notification')}</h3>
-              {notifications.length === 0 ? (
-                <div className="empty-notifications">No notifications available.</div>
-              ) : (
-                <div className="notifications-list">
-                  {notifications.map((n, index) => (
-                    <NotificationCard
-                      key={n.id}
-                      title={n.title}
-                      message={n.message}
-                      time={n.time}
-                      variant={index % 2 === 0 ? 'light' : 'dark'}
-                      onClose={() => handleDismiss(n.id)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+  <h3 className="card-title"><FaBell style={{ marginRight: '8px', color: '#c7a349' }} />Notifications</h3>
+  { (
+    <div className="notifications-list">
+     {allActivities.slice(0, 3).map((n, index) => (
+  <NotificationCard
+    key={`${n.transaction}-${n.itemNo}-${index}`}
+    title={n.itemNo}
+    title2={n.transaction}
+message={`${n.employee} : ${n.action} transaction #${n.transaction}, item #${n.itemNo}`}
+    time={`${n.date}, ${n.time}`}
+    variant={index % 2 === 0 ? 'light' : 'dark'}
+    onClose={() => setAllActivities((prev) => prev.filter((_, i) => i !== index))}
+  />
+))}
+    </div>
+  )}
+</div>
+
+            
           </div>
         </div>
       </div>

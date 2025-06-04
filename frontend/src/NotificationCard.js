@@ -1,14 +1,17 @@
 import React from 'react';
-import { FaBell, FaTimes } from 'react-icons/fa';
+import { FaTimes } from 'react-icons/fa';
 
-const NotificationCard = ({ title, message, time, onClose }) => {
+const NotificationCard = ({ title, title2, message, time, onClose, variant }) => {
   return (
-    <div className="notification-item">
+    <div className={`notification-item ${variant}`}>
       <div className="notification-content">
-        <div className="notification-title">{title}</div>
+        <div className="notification-title">
+          <strong>{title}</strong>
+          {title2 && <span style={{ marginLeft: '8px', fontWeight: 500, color: '#555' }}>{title2}</span>}
+        </div>
         <div className="notification-message">{message}</div>
       </div>
-      <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+      <div className="notification-meta" style={{ marginLeft: 'auto', textAlign: 'right' }}>
         <div style={{ fontSize: '12px', color: '#aaa' }}>{time}</div>
         <button 
           onClick={onClose} 

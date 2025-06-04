@@ -310,5 +310,37 @@ html, body {
     animation-delay: 1s;
     opacity: 0;
   }
+
+
+  .notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-family: 'Poppins', sans-serif;
+}
+
+.notification-item.light {
+  background-color: #f9f9f9;
+}
+
+.notification-item.dark {
+  background-color: #f1f1f1;
+}
+
+.notification-title {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.notification-message {
+  font-size: 13px;
+  color: #333;
+  margin-top: 2px;
+}
+
   
   
