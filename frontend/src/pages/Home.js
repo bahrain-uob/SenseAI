@@ -114,7 +114,7 @@ useEffect(() => {
   const percentage = ((totalHighRisk / maxTransactions) * 100).toFixed(1);
 
   const chartData = {
-    labels: ['Critical', 'High'],
+    labels: [ 'High'],
     datasets: [
       {
         data: [criticalCount, highCount,],
@@ -214,7 +214,7 @@ useEffect(() => {
                 }}>
                   {totalHighRisk}<br />
                   <span style={{ fontSize: '14px', color: '#666' }}>Total</span><br />
-                  <span style={{ fontSize: '16px', color: '#dc2626' }}>{percentage}%</span>
+                  
                 </div>
               </div>
             </div>
