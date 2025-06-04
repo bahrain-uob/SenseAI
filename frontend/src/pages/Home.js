@@ -12,7 +12,11 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Home = () => {
   const navigate = useNavigate();
+ 
   const { t } = useTranslation();
+
+    
+
 
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Upload Complete', message: 'Your file has been successfully uploaded to Sea Port.', time: 'Just now' },

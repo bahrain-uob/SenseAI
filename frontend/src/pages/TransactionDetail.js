@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import "./TransactionDetail.css";
 import {
@@ -6,8 +5,6 @@ import {
   FaChartLine, FaFileAlt, FaFlag, FaTrash, FaLock, FaClock, FaTimes
 } from "react-icons/fa";
 import axios from "axios";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { CognitoUserPool } from 'amazon-cognito-identity-js';
 import { useParams } from 'react-router-dom';
@@ -16,7 +13,21 @@ import {
   BarChart, Bar, XAxis, YAxis,
   Tooltip, ResponsiveContainer, Cell
 } from "recharts";
+import pdfMake from 'pdfmake/build/pdfmake';
+import amiriFontBase64 from '../fonts/Amiri-Regular-base64';
 
+pdfMake.vfs = {
+  'Amiri-Regular.ttf': amiriFontBase64
+};
+
+pdfMake.fonts = {
+  Amiri: {
+    normal: 'Amiri-Regular.ttf',
+    bold: 'Amiri-Regular.ttf',
+    italics: 'Amiri-Regular.ttf',
+    bolditalics: 'Amiri-Regular.ttf'
+  }
+};
 const TransactionDetail = () => {
 const { referenceNumber, itemNumber } = useParams(); // ✅ ✅ ✅
 
@@ -174,14 +185,14 @@ const { referenceNumber, itemNumber } = useParams(); // ✅ ✅ ✅
       const userName = userEmail ? userEmail.split(/[@.]/)[0] : 'Unknown';
 
       // ✅ Send separate fields instead of the old one
-      await axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities", {
+     //await axios.post("https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities", {
        
-        reference_number: referenceNumber,
-      item_number: itemNumber,
-        Action: "Open",
-        EmployeeName: userName,
-        Timestamp: new Date().toISOString()
-      });
+       // reference_number: referenceNumber,
+      //item_number: itemNumber,
+        //Action: "Open",
+        //EmployeeName: userName,
+        //Timestamp: new Date().toISOString()
+      //});
 
       // ✅ Updated GET query to filter using both fields
       const response = await axios.get(`https://jygos38ud0.execute-api.me-south-1.amazonaws.com/prod/employee-activities`, {
@@ -213,16 +224,6 @@ const { referenceNumber, itemNumber } = useParams(); // ✅ ✅ ✅
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [referenceNumber, itemNumber]);
-
-
-  const exportExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(activityLogs);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
-    XLSX.writeFile(workbook, `Transaction_Report_${referenceNumber}_${itemNumber}.xlsx`
-);
-  };
-  const printReport = () => window.print();
 
     useEffect(() => {
     console.log("📦 Fetching transaction details for:", referenceNumber, itemNumber);
@@ -306,7 +307,187 @@ const { referenceNumber, itemNumber } = useParams(); // ✅ ✅ ✅
  
   const minImpact = Math.min(...shapData.map(d => d.impact));
   const maxImpact = Math.max(...shapData.map(d => d.impact));
+    
+const filteredLogs = activityLogs.filter(
+  log =>
+    log.reference_number === referenceNumber &&
+    log.item_number === itemNumber
+);
+
+  {/* exporttopdf */}
+  const exportToPDF = () => {
+    
+  const reverseArabicWords = (text) => {
+    if (/[\u0600-\u06FF]/.test(text)) {
+      return text.split(' ').reverse().join(' ');
+    }
+    return text;
+  };
+
+  const actionCounts = {};
   
+  activityLogs.forEach(log => {
+    const label = log.Action || 'غير محدد';
+    actionCounts[label] = (actionCounts[label] || 0) + 1;
+  });
+
+  const actions = Object.keys(actionCounts);
+  const counts = Object.values(actionCounts);
+  const colors = ['#004c6d', '#247ba0', '#5bc0be', '#b2dbbf', '#f3ffbd', '#ff1654'];
+
+  const legendBody = actions.map((label, i) => {
+    return [
+      { text: '', fillColor: colors[i % colors.length], width: 12, height: 12, margin: [0, 0, 5, 0] },
+      { text: `${reverseArabicWords(label)}: ${counts[i]}`, fontSize: 9 }
+    ];
+  });
+
+  const chartData = actions.map((label, i) => ({
+    color: colors[i % colors.length],
+    action: reverseArabicWords(label),
+    count: counts[i]
+  }));
+
+  const chartTable = [
+    [
+      { text: 'الإجراء', style: 'tableHeader' },
+      { text: 'العدد', style: 'tableHeader' },
+      { text: 'تمثيل بياني', style: 'tableHeader' }
+    ],
+    ...chartData.map(row => ([
+      { text: row.action },
+      { text: row.count.toString(), alignment: 'center' },
+      {
+        canvas: [
+          {
+            type: 'rect',
+            x: 0,
+            y: 0,
+            w: row.count * 10, // control width by count
+            h: 10,
+            color: row.color
+          }
+        ]
+      }
+    ]))
+  ];
+
+  const docDefinition = {
+    defaultStyle: { font: 'Amiri', fontSize: 10 },
+    content: [
+      { text: 'المخالفات و الاجراءات تقرير', style: 'header' },
+      { text: `:التاريخ ${new Date().toLocaleString()}`, style: 'subheader' },
+      { text: `:المستخدم ${userName}`, style: 'subheader' },
+      { text: `Reference #: ${referenceNumber} | Item #: ${itemNumber}`, style: 'subheader' },
+
+    
+      
+   
+{
+  table: {
+    widths: ['35%', '65%'],
+    body: [
+      [{ text: ' المرجع رقم ', style: 'tableLabel' }, referenceNumber],
+      [{ text: ' البند رقم', style: 'tableLabel' }, itemNumber],
+      [{ text: 'HS Code', style: 'tableLabel' }, data?.HSCode || '-'],
+      [{ text: 'البضاعة وصف ', style: 'tableLabel' }, data?.['Commercial Description'] || '-'],
+      [{ text: 'المنشـ البلد ', style: 'tableLabel' }, data?.['Country of Origin'] || '-'],
+      [{ text: 'العملة', style: 'tableLabel' }, data?.['Invoice Currency'] || '-'],
+      [{ text: 'المحلية القيمة ', style: 'tableLabel' }, data?.['Local Amount']?.toString() || '-'],
+      [{ text: 'المضافة الضريبة  (BHD)', style: 'tableLabel' }, data?.['VAT BHD']?.toString() || '-'],
+      [{ text: 'الصافي الوزن ', style: 'tableLabel' }, data?.['Net Weight']?.toString() || '-'],
+      [{ text: 'الجمركي المخلص اسم  ', style: 'tableLabel' }, data?.['Declarant Name'] || '-'],
+      [{ text: 'المستورد  ', style: 'tableLabel' }, data?.['Consignee Name'] || '-']
+    ]
+  },
+  layout: {
+    fillColor: function (rowIndex) {
+      return rowIndex % 2 === 0 ? '#f2f2f2' : null;
+    },
+    hLineColor: () => '#ddd',
+    vLineColor: () => '#ddd',
+    hLineWidth: () => 0.75,
+    vLineWidth: () => 0.75,
+    paddingLeft: () => 8,
+    paddingRight: () => 8,
+    paddingTop: () => 4,
+    paddingBottom: () => 4
+  },
+  margin: [0, 0, 0, 10]
+  
+}
+
+,
+
+      {
+        text: 'السجل تفاصيل ',
+        style: 'sectionTitle',
+        margin: [0, 10, 0, 8]
+      },
+      {
+        table: {
+          headerRows: 1,
+          widths: ['*', '*', '*', '*', '*'],
+          body: [
+            [
+              { text: 'العملية', style: 'tableHeader' },
+              { text: 'النوع', style: 'tableHeader' },
+              { text: 'الشرح', style: 'tableHeader' },
+              { text: 'المخالف', style: 'tableHeader' },
+              { text: 'التاريخ', style: 'tableHeader' },
+            ],
+            ...activityLogs.map(log => [
+              { text: reverseArabicWords(log.Action || '-') },
+              { text: reverseArabicWords(log.TypeOfError || '-') },
+              { text: reverseArabicWords(log.ErrorExplanation || '-') },
+              { text: reverseArabicWords(log.Flager || '-') },
+              { text: new Date(log.Timestamp).toLocaleString() }
+            ])
+          ]
+        },
+        layout: {
+          fillColor: (rowIndex) => (rowIndex === 0 ? '#0A1F44' : null),
+          textColor: (rowIndex) => (rowIndex === 0 ? 'white' : 'black'),
+          hLineWidth: () => 0.5,
+          vLineWidth: () => 0.5,
+          hLineColor: () => '#BDBDBD',
+          vLineColor: () => '#BDBDBD',
+          paddingLeft: () => 8,
+          paddingRight: () => 8,
+          paddingTop: () => 4,
+          paddingBottom: () => 4
+        }
+      }
+    ],
+    styles: {
+      header: { fontSize: 18, bold: true, alignment: 'center', margin: [0, 0, 0, 10], color: '#0A1F44' },
+      subheader: { fontSize: 10, alignment: 'center', margin: [0, 2, 0, 2] },
+      sectionTitle: { fontSize: 12, bold: true, margin: [0, 10, 0, 6] },
+      tableHeader: { bold: true, fontSize: 10, color: 'white', fillColor: '#0A1F44', alignment: 'center' },
+      tableLabel: {
+  bold: true,
+  fillColor: '#0A1F44',
+  color: 'white',
+  alignment: 'right',
+  fontSize: 10,
+  margin: [0, 2, 0, 2]
+}
+
+    },
+    pageMargins: [30, 40, 30, 40],
+    footer: (currentPage, pageCount) => ({
+      text: `الصفحة ${currentPage} من ${pageCount}`,
+      alignment: 'center',
+      fontSize: 8,
+      margin: [0, 10, 0, 0],
+      font: 'Amiri'
+    })
+  };
+
+  pdfMake.createPdf(docDefinition).download(`Single_Transaction_Report_${new Date().toLocaleDateString()}.pdf`);
+};
+
+
 
   return (
     <div className="report-container">
@@ -374,7 +555,9 @@ const { referenceNumber, itemNumber } = useParams(); // ✅ ✅ ✅
         </div>
         <button className="action-btn not-flagged" onClick={() => setShowNotFlaggedComment(true)}>غير مخالف</button>
         <button className="action-btn pending" onClick={handlePending}><FaClock /> قيد التدقيق</button>
-        <button className="action-btn report-btn" onClick={() => setShowReport(true)}><FaFileAlt /> عرض تقرير تفصيلي</button>
+        <button className="action-btn report-btn" onClick={exportToPDF}>
+          📄 Generate PDF
+        </button>
       </div>
 
       {showFlagDetails && (
@@ -511,12 +694,7 @@ const { referenceNumber, itemNumber } = useParams(); // ✅ ✅ ✅
               ))}
             </tbody>
           </table>
-          <div className="report-buttons">
-            <div className="no-print">
-              <button onClick={printReport}>🖨️ طباعة / حفظ كـ PDF</button>
-            </div>
-            <button onClick={exportExcel}>تصدير Excel</button>
-          </div>
+          
         </div>
       )}
     </div>

@@ -77,28 +77,33 @@
 }
 
 .action-btn {
-  padding: 10px 18px;
-  font-weight: 600;
+   padding: 12px 24px;
+  font-weight: bold;
   font-size: 14px;
-  border-radius: 6px;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
-  background-color: #e0e0e0;
-  color: #333;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   transition: all 0.3s ease;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+
 }
 
 .action-btn.flag {
-  background-color: red;
-  color: #fff;
+  background-color: #F8F8FF;
+  color: #0b1743;
 }
 
 .action-btn.pending {
-  background-color: #ffa500;
-  color: white;
+  background-color: #F8F8FF;
+  color: #0b1743;
+}
+
+.action-btn.not-flagged {
+  background-color: #F8F8FF;
+  color: #0b1743;
 }
 
 .action-btn.close {
@@ -139,9 +144,22 @@
 }
 
 .selected-action {
-  font-weight: bold;
-  color: #333;
-  margin-top: 10px;
+  background-color: #F8F8FF;
+  color: #0b1743;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: fadeSlideIn 0.5s forwards;
+}
+
+@keyframes fadeSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .flag-details {
@@ -277,19 +295,20 @@
 }
 
 .action-btn.flag {
-  background-color: #ff3b30;
-  color: white;
+  background-color: #F8F8FF;
+  color: #0b1743;
 }
 
 .action-btn.pending {
-  background-color: #ff9500;
-  color: white;
+  background-color: #F8F8FF;
+  color: #0b1743;
 }
 
 .action-btn.close {
-  background-color: #333;
-  color: white;
+  background-color: #F8F8FF;
+  color: #0b1743;
 }
+
 
 .action-btn:hover {
   transform: translateY(-2px);
@@ -300,7 +319,6 @@
 .status-label {
   font-weight: bold;
   color: #0b1743;
-  margin-left: 8px;
   font-size: 16px;
 }
 
@@ -356,10 +374,7 @@
   box-shadow: 0 3px 6px rgba(0,0,0,0.1);
 }
 
-.action-btn.flag { background-color: #f44336; color: white; }
-.action-btn.pending { background-color: #ff9800; color: white; }
-.action-btn.not-flagged { background-color: #4caf50; color: white; }
-.action-btn.close { background-color: #333; color: white; }
+
 
 .action-btn:hover {
   transform: translateY(-2px);
@@ -402,3 +417,4 @@
   font-size: 13px;
   margin-bottom: 0.5rem;
 }
+
