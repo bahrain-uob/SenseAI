@@ -1,6 +1,5 @@
-
-import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route,Navigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./logIn";
 import HomePage from "./pages/HomePage";
 import Home from "./pages/Home";
@@ -12,14 +11,40 @@ import Air from "./pages/Air";
 import Land from "./Land";
 import Sea from "./Sea";
 import AllPorts from "./pages/Allports";
-import TransactionDetail from "./pages/TransactionDetail"
-import ScrollToTop from './ScrollToTop'; // adjust the path
+import TransactionDetail from "./pages/TransactionDetail";
+import ScrollToTop from './ScrollToTop';
+
+import { CognitoUserPool } from 'amazon-cognito-identity-js';
+import { poolData } from './awsConfig';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // check authntication
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loadingAuth, setLoadingAuth] = useState(true); // Wait until we check session
+
+  useEffect(() => {
+    const userPool = new CognitoUserPool(poolData);
+    const user = userPool.getCurrentUser();
+
+    if (user) {
+      user.getSession((err, session) => {
+        if (err || !session?.isValid()) {
+          setIsAuthenticated(false);
+        } else {
+          setIsAuthenticated(true);
+        }
+        setLoadingAuth(false);
+      });
+    } else {
+      setIsAuthenticated(false);
+      setLoadingAuth(false);
+    }
+  }, []);
+
+  if (loadingAuth) return <div>Loading...</div>; // Optional loading screen
+
   return (
     <Router>
-       <ScrollToTop />
+      <ScrollToTop />
       <Routes>
         <Route
           path="/login"
@@ -29,7 +54,7 @@ function App() {
           path="/*"
           element={
             isAuthenticated ? (
-              <HomePage> 
+              <HomePage>
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/pages/upload" element={<Upload />} />
@@ -41,8 +66,6 @@ function App() {
                   <Route path="/pages/seaport" element={<Sea />} />
                   <Route path="/pages/allports" element={<AllPorts />} />
                   <Route path="/pages/transaction/:referenceNumber/:itemNumber" element={<TransactionDetail />} />
-
-
                 </Routes>
               </HomePage>
             ) : (
@@ -56,34 +79,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
