@@ -147,6 +147,7 @@ const { referenceNumber, itemNumber } = useParams(); // ✅ ✅ ✅
   const handleFlagSelect = (action) => {
     setSelectedAction(action);
     saveActionForTransaction(referenceNumber, itemNumber , action);  // 🔥 Save to localStorage
+    
     setShowFlagMenu(false);
     setShowFlagDetails(true);
   };
